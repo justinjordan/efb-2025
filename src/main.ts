@@ -7,8 +7,8 @@ const defaultOptions = {
   debug: false,
 };
 
-export default class Efs {
-  logger = log.getLogger("Efs");
+export default class Efb {
+  logger = log.getLogger("Efb");
   options: GameOptions;
   states: State[] = [];
   running = false;
@@ -32,12 +32,12 @@ export default class Efs {
     });
 
     this.logger.setLevel(options.debug ? "debug" : "silent");
-    this.logger.debug("Efs initialized with options", this.options);
+    this.logger.debug("Efb initialized with options", this.options);
   }
 
   public start() {
     this.running = true;
-    this.logger.debug("Efs is running");
+    this.logger.debug("Efb is running");
 
     // Add the first state
     const state = new GameState(this, this.canvas);
@@ -51,7 +51,7 @@ export default class Efs {
   public stop() {
     this.running = false;
     this.states = [];
-    this.logger.debug("Efs is stopped");
+    this.logger.debug("Efb is stopped");
   }
 
   public pushState(state: State) {
@@ -91,7 +91,7 @@ export default class Efs {
     this.lastUpdate = currentTime;
 
     if (!this.running) {
-      this.logger.debug("Efs is not running, stopping loop");
+      this.logger.debug("Efb is not running, stopping loop");
       this.stop();
       return;
     }

@@ -1,9 +1,9 @@
-import Efs from "../main";
+import Efb from "../main";
 import State from "../types/State";
 
 export default class PauseState extends State {
   constructor(
-    private readonly game: Efs,
+    private readonly game: Efb,
     private readonly canvas: HTMLCanvasElement
   ) {
     super();

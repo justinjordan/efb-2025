@@ -14,7 +14,7 @@
       overflow: hidden;
     }
 
-    canvas#efs-game {
+    canvas#efb-game {
       display: block;
       width: 100%;
       height: 100%;
@@ -23,12 +23,12 @@
 </head>
 
 <body>
-  <canvas id="efs-game"></canvas>
+  <canvas id="efb-game"></canvas>
   <script type="module">
-    import Efs from './src/main.ts';
+    import Efb from './src/main.ts';
 
-    const canvas = document.getElementById('efs-game');
-    const game = new Efs(canvas, {
+    const canvas = document.getElementById('efb-game');
+    const game = new Efb(canvas, {
       debug: true
     });
     game.start();

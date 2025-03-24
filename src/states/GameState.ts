@@ -1,6 +1,6 @@
 import Ball from "../entities/Ball";
 import Layer from "../entities/Layer";
-import Efs from "../main";
+import Efb from "../main";
 import State from "../types/State";
 import PauseState from "./PauseState";
 
@@ -11,7 +11,7 @@ export default class GameState extends State {
   backgroundLayer: Layer;
 
   constructor(
-    private readonly game: Efs,
+    private readonly game: Efb,
     private readonly canvas: HTMLCanvasElement
   ) {
     super();
