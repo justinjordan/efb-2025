@@ -2,6 +2,7 @@ import Ball from "../entities/Ball";
 import Layer from "../entities/Layer";
 import Efs from "../main";
 import State from "../types/State";
+import PauseState from "./PauseState";
 
 export default class GameState extends State {
   balls: Ball[] = [];
@@ -29,6 +30,22 @@ export default class GameState extends State {
         })
       );
     }
+
+    this.handleKeyup = this.handleKeyup.bind(this);
+  }
+
+  private handleKeyup(e: KeyboardEvent) {
+    if (e.key === "p") {
+      this.game.pushState(new PauseState(this.game, this.canvas));
+    }
+  }
+
+  public onEnter() {
+    document.addEventListener("keyup", this.handleKeyup);
+  }
+
+  public onExit() {
+    document.removeEventListener("keyup", this.handleKeyup);
   }
 
   public update(delta: number) {
@@ -104,10 +121,6 @@ export default class GameState extends State {
       });
     });
 
-    ctx.drawImage(this.backgroundLayer.canvas, 0, 0);
-    ctx.drawImage(this.trailLayer.canvas, 0, 0);
-    ctx.drawImage(this.ballLayer.canvas, 0, 0);
-
     this.trailLayer = new Layer(canvas, this.trailLayer).withLayer(
       (canvas, ctx) => {
         ctx.filter = "blur(2px) hue-rotate(5deg) saturate(0.99) opacity(0.99)";
@@ -115,5 +128,9 @@ export default class GameState extends State {
         ctx.filter = "none";
       }
     );
+
+    ctx.drawImage(this.backgroundLayer.canvas, 0, 0);
+    ctx.drawImage(this.trailLayer.canvas, 0, 0);
+    ctx.drawImage(this.ballLayer.canvas, 0, 0);
   }
 }

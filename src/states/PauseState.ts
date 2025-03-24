@@ -1,0 +1,44 @@
+import Efs from "../main";
+import State from "../types/State";
+
+export default class PauseState extends State {
+  constructor(
+    private readonly game: Efs,
+    private readonly canvas: HTMLCanvasElement
+  ) {
+    super();
+
+    this.handleKeyup = this.handleKeyup.bind(this);
+  }
+
+  private handleKeyup(e: KeyboardEvent) {
+    if (e.key === "p") {
+      this.game.popState();
+    }
+  }
+
+  public onEnter() {
+    document.addEventListener("keyup", this.handleKeyup);
+  }
+
+  public onExit() {
+    document.removeEventListener("keyup", this.handleKeyup);
+  }
+
+  public update(delta: number) {
+    // do nothing
+  }
+
+  public render(canvas: HTMLCanvasElement) {
+    const ctx = canvas.getContext("2d");
+
+    if (!ctx) {
+      throw new Error("Cannot get 2d context from canvas");
+    }
+
+    ctx.font = "48px serif";
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "center";
+    ctx.fillText("Paused", canvas.width / 2, canvas.height / 2);
+  }
+}

@@ -40,7 +40,9 @@ export default class Efs {
     this.logger.debug("Efs is running");
 
     // Add the first state
-    this.states.push(new GameState(this, this.canvas));
+    const state = new GameState(this, this.canvas);
+    state.onEnter();
+    this.states.push(state);
 
     // Start the game loop
     requestAnimationFrame(this.loop.bind(this));
@@ -50,6 +52,21 @@ export default class Efs {
     this.running = false;
     this.states = [];
     this.logger.debug("Efs is stopped");
+  }
+
+  public pushState(state: State) {
+    const lastState = this.states[this.states.length - 1];
+    lastState.onExit();
+    state.onEnter();
+    this.states.push(state);
+  }
+
+  public popState() {
+    const lastState = this.states[this.states.length - 1];
+    lastState.onExit();
+    this.states.pop();
+    const newState = this.states[this.states.length - 1];
+    newState.onEnter();
   }
 
   private resetCanvas() {
