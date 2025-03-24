@@ -19,6 +19,17 @@ export default class PauseState extends State {
 
   public onEnter() {
     document.addEventListener("keyup", this.handleKeyup);
+
+    const ctx = this.canvas.getContext("2d");
+
+    if (!ctx) {
+      throw new Error("Cannot get 2d context from canvas");
+    }
+
+    ctx.font = "48px serif";
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "center";
+    ctx.fillText("Paused", this.canvas.width / 2, this.canvas.height / 2);
   }
 
   public onExit() {
@@ -30,15 +41,6 @@ export default class PauseState extends State {
   }
 
   public render(canvas: HTMLCanvasElement) {
-    const ctx = canvas.getContext("2d");
-
-    if (!ctx) {
-      throw new Error("Cannot get 2d context from canvas");
-    }
-
-    ctx.font = "48px serif";
-    ctx.fillStyle = "#fff";
-    ctx.textAlign = "center";
-    ctx.fillText("Paused", canvas.width / 2, canvas.height / 2);
+    // do nothing
   }
 }
