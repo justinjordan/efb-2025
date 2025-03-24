@@ -408,6 +408,13 @@
     "@parcel/utils" "2.14.2"
     posthtml "^0.16.4"
 
+"@parcel/packager-ts@2.14.2":
+  version "2.14.2"
+  resolved "https://registry.yarnpkg.com/@parcel/packager-ts/-/packager-ts-2.14.2.tgz#dd1c57244d4fcb2873acbfd59197f0c295a0c46a"
+  integrity sha512-zXvkI2v6o8sE4uxov5o9p3veDJ/ejSjaN1WNaOxqI9hklo25ukII9iCOgPwXJKOa8f9+nt7r8JyzZxmHIlEHhg==
+  dependencies:
+    "@parcel/plugin" "2.14.2"
+
 "@parcel/packager-wasm@2.14.2":
   version "2.14.2"
   resolved "https://registry.yarnpkg.com/@parcel/packager-wasm/-/packager-wasm-2.14.2.tgz#ae7fe8d26584e715d6187e36895143f246292942"
