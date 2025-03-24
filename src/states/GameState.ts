@@ -117,7 +117,10 @@ export default class GameState extends State {
         });
         ctx.stroke();
 
-        ball.render(canvas);
+        ctx.beginPath();
+        ctx.fillStyle = ball.color;
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+        ctx.fill();
       });
     });
 

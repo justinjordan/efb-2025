@@ -14,6 +14,14 @@ export default class Ball extends State {
     Object.assign(this, options);
   }
 
+  onEnter(): void {
+    // do nothing
+  }
+
+  onExit(): void {
+    // do nothing
+  }
+
   update(delta: number): void {
     this.pastPositions.push({ x: this.x, y: this.y });
     if (this.pastPositions.length > 1) {
