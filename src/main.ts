@@ -14,6 +14,7 @@ export default class Efs {
   running = false;
 
   private lastUpdate = 0;
+  private isVisible = true;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -24,6 +25,11 @@ export default class Efs {
     this.resetCanvas();
     const resizeObserver = new ResizeObserver(() => this.resetCanvas());
     resizeObserver.observe(this.canvas);
+
+    document.addEventListener("visibilitychange", () => {
+      this.isVisible = document.visibilityState === "visible";
+      this.logger.debug("Visibility change", this.isVisible);
+    });
 
     this.logger.setLevel(options.debug ? "debug" : "silent");
     this.logger.debug("Efs initialized with options", this.options);
@@ -82,11 +88,13 @@ export default class Efs {
     try {
       const state = this.states[this.states.length - 1];
 
-      // Update all states
-      state.update(delta);
+      if (this.isVisible) {
+        // Update all states
+        state.update(delta);
 
-      // Render all states
-      state.render(this.canvas);
+        // Render all states
+        state.render(this.canvas);
+      }
     } catch (error) {
       this.logger.error("Error in game loop", error);
     }

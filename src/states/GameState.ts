@@ -43,9 +43,11 @@ export default class GameState extends State {
 
         const dx = ball1.x - ball2.x;
         const dy = ball1.y - ball2.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const dir = Math.atan2(dy, dx);
 
-        ball1.xSpeed -= 1 * dx * delta;
-        ball1.ySpeed -= 1 * dy * delta;
+        ball1.xSpeed -= 8 * dist * Math.cos(dir) * delta;
+        ball1.ySpeed -= 8 * dist * Math.sin(dir) * delta;
       }
     }
 
@@ -53,22 +55,22 @@ export default class GameState extends State {
     this.balls.forEach((ball) => {
       if (ball.x < ball.radius) {
         ball.x = ball.radius;
-        ball.xSpeed *= -1;
+        ball.xSpeed = Math.abs(ball.xSpeed);
       }
 
       if (ball.x > this.canvas.width - ball.radius) {
         ball.x = this.canvas.width - ball.radius;
-        ball.xSpeed *= -1;
+        ball.xSpeed = -Math.abs(ball.xSpeed);
       }
 
       if (ball.y < ball.radius) {
         ball.y = ball.radius;
-        ball.ySpeed *= -1;
+        ball.ySpeed = Math.abs(ball.ySpeed);
       }
 
       if (ball.y > this.canvas.height - ball.radius) {
         ball.y = this.canvas.height - ball.radius;
-        ball.ySpeed *= -1;
+        ball.ySpeed = -Math.abs(ball.ySpeed);
       }
     });
   }
@@ -88,7 +90,6 @@ export default class GameState extends State {
     });
 
     this.trailLayer.withLayer((canvas, ctx) => {
-      // ctx.drawImage(this.ballLayer.canvas, 0, 0);
       this.balls.forEach((ball) => {
         ctx.beginPath();
         ctx.moveTo(ball.x, ball.y);
@@ -103,16 +104,16 @@ export default class GameState extends State {
       });
     });
 
+    ctx.drawImage(this.backgroundLayer.canvas, 0, 0);
+    ctx.drawImage(this.trailLayer.canvas, 0, 0);
+    ctx.drawImage(this.ballLayer.canvas, 0, 0);
+
     this.trailLayer = new Layer(canvas, this.trailLayer).withLayer(
       (canvas, ctx) => {
-        ctx.filter = "blur(2px) hue-rotate(2deg) opacity(0.99)";
+        ctx.filter = "blur(2px) hue-rotate(5deg) saturate(0.99) opacity(0.99)";
         ctx.drawImage(this.trailLayer.canvas, 0, 0);
         ctx.filter = "none";
       }
     );
-
-    ctx.drawImage(this.backgroundLayer.canvas, 0, 0);
-    ctx.drawImage(this.trailLayer.canvas, 0, 0);
-    ctx.drawImage(this.ballLayer.canvas, 0, 0);
   }
 }
