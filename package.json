@@ -1,0 +1,24 @@
+{
+  "name": "efb-2025",
+  "version": "0.0.0",
+  "description": "Elastic Fire Balls 2025",
+  "scripts": {
+    "dev": "parcel dev.html",
+    "build": "parcel build",
+    "watch": "parcel watch"
+  },
+  "source": "src/main.ts",
+  "main": "dist/main.js",
+  "module": "dist/module.js",
+  "types": "dist/types.d.ts",
+  "author": "Justin Jordan",
+  "license": "MIT",
+  "devDependencies": {
+    "@parcel/transformer-typescript-types": "2.14.2",
+    "parcel": "^2.14.2",
+    "typescript": ">=3.0.0"
+  },
+  "dependencies": {
+    "loglevel": "^1.9.2"
+  }
+}

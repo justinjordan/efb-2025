@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elastic Fire Balls 2025</title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    canvas#efs-game {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="efs-game"></canvas>
+  <script type="module">
+    import Efs from './src/main.ts';
+
+    const canvas = document.getElementById('efs-game');
+    const game = new Efs(canvas, {
+      debug: true
+    });
+    game.start();
+  </script>
+</body>
+
+</html>
