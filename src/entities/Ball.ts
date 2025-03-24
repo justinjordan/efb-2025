@@ -3,6 +3,7 @@ import State from "../types/State";
 export default class Ball extends State {
   x: number = 0;
   y: number = 0;
+  pastPositions: { x: number; y: number }[] = [];
   xSpeed: number = 0;
   ySpeed: number = 0;
   radius: number = 20;
@@ -14,6 +15,11 @@ export default class Ball extends State {
   }
 
   update(delta: number): void {
+    this.pastPositions.push({ x: this.x, y: this.y });
+    if (this.pastPositions.length > 1) {
+      this.pastPositions.shift();
+    }
+
     this.x += this.xSpeed * delta;
     this.y += this.ySpeed * delta;
   }

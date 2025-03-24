@@ -32,5 +32,7 @@ export default class Layer {
     }
 
     cb(this.canvas, this.ctx);
+
+    return this;
   }
 }

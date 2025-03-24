@@ -7,6 +7,7 @@ export default class GameState extends State {
   balls: Ball[] = [];
   ballLayer: Layer;
   trailLayer: Layer;
+  backgroundLayer: Layer;
 
   constructor(
     private readonly game: Efs,
@@ -14,12 +15,9 @@ export default class GameState extends State {
   ) {
     super();
 
-    this.ballLayer = new Layer(canvas, {
-      backgroundColor: "#000",
-    });
-    this.trailLayer = new Layer(canvas, {
-      backgroundColor: "#000",
-    });
+    this.ballLayer = new Layer(canvas);
+    this.trailLayer = new Layer(canvas);
+    this.backgroundLayer = new Layer(canvas, { backgroundColor: "#000" });
 
     for (let i = 0; i < 3; i++) {
       this.balls.push(
@@ -90,13 +88,30 @@ export default class GameState extends State {
     });
 
     this.trailLayer.withLayer((canvas, ctx) => {
-      ctx.filter = "blur(2px) brightness(0.99) hue-rotate(3deg)";
-      ctx.drawImage(canvas, 0, 0);
-      ctx.filter = "none";
+      // ctx.drawImage(this.ballLayer.canvas, 0, 0);
+      this.balls.forEach((ball) => {
+        ctx.beginPath();
+        ctx.moveTo(ball.x, ball.y);
+        ctx.lineWidth = ball.radius * 2;
+        ctx.strokeStyle = ball.color;
+        ball.pastPositions.forEach(({ x, y }) => {
+          ctx.lineTo(x, y);
+        });
+        ctx.stroke();
 
-      ctx.drawImage(this.ballLayer.canvas, 0, 0);
+        ball.render(canvas);
+      });
     });
 
+    this.trailLayer = new Layer(canvas, this.trailLayer).withLayer(
+      (canvas, ctx) => {
+        ctx.filter = "blur(2px) hue-rotate(2deg) opacity(0.99)";
+        ctx.drawImage(this.trailLayer.canvas, 0, 0);
+        ctx.filter = "none";
+      }
+    );
+
+    ctx.drawImage(this.backgroundLayer.canvas, 0, 0);
     ctx.drawImage(this.trailLayer.canvas, 0, 0);
     ctx.drawImage(this.ballLayer.canvas, 0, 0);
   }
