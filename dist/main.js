@@ -150,8 +150,9 @@ class $88c64d01b002ea7b$export$2e2bcd8739ae039 extends (0, $c6e9585522073c38$exp
             this.mouseDown = false;
             this.heldBall = null;
         }, this.handleMouseMove = (e)=>{
-            this.mouseX = e.clientX;
-            this.mouseY = e.clientY;
+            const rect = this.canvas.getBoundingClientRect();
+            this.mouseX = e.clientX - rect.left;
+            this.mouseY = e.clientY - rect.top;
         };
         this.canvas = document.createElement("canvas");
         this.canvas.width = this.game.canvas.width;
