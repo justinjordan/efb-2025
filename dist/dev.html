@@ -1096,7 +1096,7 @@ class GameState extends (0, _stateDefault.default) {
             this.mouseDown = false;
             this.heldBall = null;
         }, this.handleMouseMove = (e)=>{
-            const rect = this.canvas.getBoundingClientRect();
+            const rect = this.game.canvas.getBoundingClientRect();
             this.mouseX = e.clientX - rect.left;
             this.mouseY = e.clientY - rect.top;
         };

@@ -56,7 +56,7 @@ export default class GameState extends State {
   };
 
   private handleMouseMove = (e: MouseEvent) => {
-    const rect = this.canvas.getBoundingClientRect();
+    const rect = this.game.canvas.getBoundingClientRect();
     this.mouseX = e.clientX - rect.left;
     this.mouseY = e.clientY - rect.top;
   };
