@@ -35,6 +35,9 @@ class $96ef78e216622c6f$export$2e2bcd8739ae039 extends (0, $c6e9585522073c38$exp
     onExit() {
     // do nothing
     }
+    handleResize() {
+    // do nothing
+    }
     update(delta) {
         this.pastPositions.push({
             x: this.x,
@@ -51,6 +54,12 @@ class $96ef78e216622c6f$export$2e2bcd8739ae039 extends (0, $c6e9585522073c38$exp
         ctx.fillStyle = this.color;
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fill();
+    }
+    isCollision(x, y) {
+        const dx = this.x - x;
+        const dy = this.y - y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        return distance < this.radius;
     }
 }
 
@@ -135,7 +144,15 @@ class $a0a23f93dcace043$export$2e2bcd8739ae039 extends (0, $c6e9585522073c38$exp
 
 class $88c64d01b002ea7b$export$2e2bcd8739ae039 extends (0, $c6e9585522073c38$export$2e2bcd8739ae039) {
     constructor(game){
-        super(), this.game = game, this.balls = [];
+        super(), this.game = game, this.balls = [], this.heldBall = null, this.mouseDown = false, this.mouseX = 0, this.mouseY = 0, this.handleMouseDown = (e)=>{
+            this.mouseDown = true;
+        }, this.handleMouseUp = (e)=>{
+            this.mouseDown = false;
+            this.heldBall = null;
+        }, this.handleMouseMove = (e)=>{
+            this.mouseX = e.clientX;
+            this.mouseY = e.clientY;
+        };
         this.canvas = document.createElement("canvas");
         this.canvas.width = this.game.canvas.width;
         this.canvas.height = this.game.canvas.height;
@@ -144,7 +161,7 @@ class $88c64d01b002ea7b$export$2e2bcd8739ae039 extends (0, $c6e9585522073c38$exp
         this.backgroundLayer = new (0, $565a624516254204$export$2e2bcd8739ae039)(this.canvas, {
             backgroundColor: "#023"
         });
-        for(let i = 0; i < 4; i++)this.balls.push(new (0, $96ef78e216622c6f$export$2e2bcd8739ae039)({
+        for(let i = 0; i < 3; i++)this.balls.push(new (0, $96ef78e216622c6f$export$2e2bcd8739ae039)({
             x: this.canvas.width * Math.random(),
             y: this.canvas.height * Math.random(),
             xSpeed: (300 * Math.random() + 200) * (Math.random() > 0.5 ? 1 : -1),
@@ -162,16 +179,24 @@ class $88c64d01b002ea7b$export$2e2bcd8739ae039 extends (0, $c6e9585522073c38$exp
     }
     onEnter() {
         document.addEventListener("keyup", this.handleKeyup);
+        document.addEventListener("mousedown", this.handleMouseDown);
+        document.addEventListener("mouseup", this.handleMouseUp);
+        document.addEventListener("mousemove", this.handleMouseMove);
     }
     onExit() {
         document.removeEventListener("keyup", this.handleKeyup);
+        document.removeEventListener("mousedown", this.handleMouseDown);
+        document.removeEventListener("mouseup", this.handleMouseUp);
+        document.removeEventListener("mousemove", this.handleMouseMove);
     }
     update(delta) {
         this.balls.forEach((ball)=>ball.update(delta));
+        // Handle ball attraction
         for(let i = 0; i < this.balls.length; i++)for(let j = 0; j < this.balls.length; j++){
             if (i === j) continue;
             const ball1 = this.balls[i];
             const ball2 = this.balls[j];
+            if (ball1 === this.heldBall) continue;
             const dx = ball1.x - ball2.x;
             const dy = ball1.y - ball2.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
@@ -179,8 +204,9 @@ class $88c64d01b002ea7b$export$2e2bcd8739ae039 extends (0, $c6e9585522073c38$exp
             ball1.xSpeed -= 8 * dist * Math.cos(dir) * delta;
             ball1.ySpeed -= 8 * dist * Math.sin(dir) * delta;
         }
-        // bounce the balls
+        // Handle ball boundaries
         this.balls.forEach((ball)=>{
+            if (ball === this.heldBall) return;
             if (ball.x < ball.radius) {
                 ball.x = ball.radius;
                 ball.xSpeed = Math.abs(ball.xSpeed);
@@ -197,7 +223,15 @@ class $88c64d01b002ea7b$export$2e2bcd8739ae039 extends (0, $c6e9585522073c38$exp
                 ball.y = this.canvas.height - ball.radius;
                 ball.ySpeed = -Math.abs(ball.ySpeed);
             }
+            if (!this.heldBall && this.mouseDown && ball.isCollision(this.mouseX, this.mouseY)) this.heldBall = ball;
         });
+        // handle mouse drag
+        if (this.heldBall) {
+            this.heldBall.x = this.mouseX;
+            this.heldBall.y = this.mouseY;
+            this.heldBall.xSpeed = 0;
+            this.heldBall.ySpeed = 0;
+        }
     }
     render() {
         const ctx = this.canvas.getContext("2d");

@@ -22,6 +22,10 @@ export default class Ball extends State {
     // do nothing
   }
 
+  handleResize(): void {
+    // do nothing
+  }
+
   update(delta: number): void {
     this.pastPositions.push({ x: this.x, y: this.y });
     if (this.pastPositions.length > 1) {
@@ -43,5 +47,13 @@ export default class Ball extends State {
     ctx.fillStyle = this.color;
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     ctx.fill();
+  }
+
+  isCollision(x: number, y: number): boolean {
+    const dx = this.x - x;
+    const dy = this.y - y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    return distance < this.radius;
   }
 }

@@ -10,6 +10,11 @@ export default class GameState extends State {
   trailLayer: Layer;
   backgroundLayer: Layer;
 
+  private heldBall: Ball | null = null;
+  private mouseDown = false;
+  private mouseX = 0;
+  private mouseY = 0;
+
   constructor(private readonly game: Efb) {
     super();
 
@@ -21,7 +26,7 @@ export default class GameState extends State {
     this.trailLayer = new Layer(this.canvas);
     this.backgroundLayer = new Layer(this.canvas, { backgroundColor: "#023" });
 
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 3; i++) {
       this.balls.push(
         new Ball({
           x: this.canvas.width * Math.random(),
@@ -41,6 +46,20 @@ export default class GameState extends State {
     }
   }
 
+  private handleMouseDown = (e: MouseEvent) => {
+    this.mouseDown = true;
+  };
+
+  private handleMouseUp = (e: MouseEvent) => {
+    this.mouseDown = false;
+    this.heldBall = null;
+  };
+
+  private handleMouseMove = (e: MouseEvent) => {
+    this.mouseX = e.clientX;
+    this.mouseY = e.clientY;
+  };
+
   public handleResize() {
     this.ballLayer.handleResize();
     this.trailLayer.handleResize();
@@ -49,21 +68,30 @@ export default class GameState extends State {
 
   public onEnter() {
     document.addEventListener("keyup", this.handleKeyup);
+    document.addEventListener("mousedown", this.handleMouseDown);
+    document.addEventListener("mouseup", this.handleMouseUp);
+    document.addEventListener("mousemove", this.handleMouseMove);
   }
 
   public onExit() {
     document.removeEventListener("keyup", this.handleKeyup);
+    document.removeEventListener("mousedown", this.handleMouseDown);
+    document.removeEventListener("mouseup", this.handleMouseUp);
+    document.removeEventListener("mousemove", this.handleMouseMove);
   }
 
   public update(delta: number) {
     this.balls.forEach((ball) => ball.update(delta));
 
+    // Handle ball attraction
     for (let i = 0; i < this.balls.length; i++) {
       for (let j = 0; j < this.balls.length; j++) {
         if (i === j) continue;
 
         const ball1 = this.balls[i];
         const ball2 = this.balls[j];
+
+        if (ball1 === this.heldBall) continue;
 
         const dx = ball1.x - ball2.x;
         const dy = ball1.y - ball2.y;
@@ -75,8 +103,10 @@ export default class GameState extends State {
       }
     }
 
-    // bounce the balls
+    // Handle ball boundaries
     this.balls.forEach((ball) => {
+      if (ball === this.heldBall) return;
+
       if (ball.x < ball.radius) {
         ball.x = ball.radius;
         ball.xSpeed = Math.abs(ball.xSpeed);
@@ -96,7 +126,23 @@ export default class GameState extends State {
         ball.y = this.canvas.height - ball.radius;
         ball.ySpeed = -Math.abs(ball.ySpeed);
       }
+
+      if (
+        !this.heldBall &&
+        this.mouseDown &&
+        ball.isCollision(this.mouseX, this.mouseY)
+      ) {
+        this.heldBall = ball;
+      }
     });
+
+    // handle mouse drag
+    if (this.heldBall) {
+      this.heldBall.x = this.mouseX;
+      this.heldBall.y = this.mouseY;
+      this.heldBall.xSpeed = 0;
+      this.heldBall.ySpeed = 0;
+    }
   }
 
   public render() {
