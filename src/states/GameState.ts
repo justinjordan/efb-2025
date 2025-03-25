@@ -10,21 +10,22 @@ export default class GameState extends State {
   trailLayer: Layer;
   backgroundLayer: Layer;
 
-  constructor(
-    private readonly game: Efb,
-    private readonly canvas: HTMLCanvasElement
-  ) {
+  constructor(private readonly game: Efb) {
     super();
 
-    this.ballLayer = new Layer(canvas);
-    this.trailLayer = new Layer(canvas);
-    this.backgroundLayer = new Layer(canvas, { backgroundColor: "#000" });
+    this.canvas = document.createElement("canvas");
+    this.canvas.width = this.game.canvas.width;
+    this.canvas.height = this.game.canvas.height;
 
-    for (let i = 0; i < 3; i++) {
+    this.ballLayer = new Layer(this.canvas);
+    this.trailLayer = new Layer(this.canvas);
+    this.backgroundLayer = new Layer(this.canvas, { backgroundColor: "#023" });
+
+    for (let i = 0; i < 4; i++) {
       this.balls.push(
         new Ball({
-          x: canvas.width * Math.random(),
-          y: canvas.height * Math.random(),
+          x: this.canvas.width * Math.random(),
+          y: this.canvas.height * Math.random(),
           xSpeed: (300 * Math.random() + 200) * (Math.random() > 0.5 ? 1 : -1),
           ySpeed: (300 * Math.random() + 200) * (Math.random() > 0.5 ? 1 : -1),
         })
@@ -36,8 +37,14 @@ export default class GameState extends State {
 
   private handleKeyup(e: KeyboardEvent) {
     if (e.key === "p") {
-      this.game.pushState(new PauseState(this.game, this.canvas));
+      this.pauseGame();
     }
+  }
+
+  public handleResize() {
+    this.ballLayer.handleResize();
+    this.trailLayer.handleResize();
+    this.backgroundLayer.handleResize();
   }
 
   public onEnter() {
@@ -92,14 +99,12 @@ export default class GameState extends State {
     });
   }
 
-  public render(canvas: HTMLCanvasElement) {
-    const ctx = canvas.getContext("2d");
+  public render() {
+    const ctx = this.canvas.getContext("2d");
 
     if (!ctx) {
       throw new Error("Cannot get 2d context from canvas");
     }
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     this.ballLayer.withLayer((canvas, ctx) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -124,7 +129,7 @@ export default class GameState extends State {
       });
     });
 
-    this.trailLayer = new Layer(canvas, this.trailLayer).withLayer(
+    this.trailLayer = new Layer(this.canvas, this.trailLayer).withLayer(
       (canvas, ctx) => {
         ctx.filter = "blur(2px) hue-rotate(5deg) saturate(0.99) opacity(0.99)";
         ctx.drawImage(this.trailLayer.canvas, 0, 0);
@@ -132,8 +137,13 @@ export default class GameState extends State {
       }
     );
 
+    this.backgroundLayer.clear();
     ctx.drawImage(this.backgroundLayer.canvas, 0, 0);
     ctx.drawImage(this.trailLayer.canvas, 0, 0);
     ctx.drawImage(this.ballLayer.canvas, 0, 0);
+  }
+
+  private pauseGame() {
+    this.game.pushState(new PauseState(this.game));
   }
 }

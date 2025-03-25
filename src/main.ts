@@ -12,18 +12,18 @@ export default class Efb {
   options: GameOptions;
   states: State[] = [];
   running = false;
+  isVisible = true;
 
   private lastUpdate = 0;
-  private isVisible = true;
 
   constructor(
-    private readonly canvas: HTMLCanvasElement,
+    public canvas: HTMLCanvasElement,
     options: GameOptions = defaultOptions
   ) {
     this.options = { ...defaultOptions, ...options };
 
-    this.resetCanvas();
-    const resizeObserver = new ResizeObserver(() => this.resetCanvas());
+    this.handleResize();
+    const resizeObserver = new ResizeObserver(() => this.handleResize());
     resizeObserver.observe(this.canvas);
 
     document.addEventListener("visibilitychange", () => {
@@ -40,7 +40,7 @@ export default class Efb {
     this.logger.debug("Efb is running");
 
     // Add the first state
-    const state = new GameState(this, this.canvas);
+    const state = new GameState(this);
     state.onEnter();
     this.states.push(state);
 
@@ -54,41 +54,65 @@ export default class Efb {
     this.logger.debug("Efb is stopped");
   }
 
+  public getCurrentState() {
+    return this.states?.[this.states.length - 1];
+  }
+
+  public getPreviousState() {
+    return this.states?.[this.states.length - 2];
+  }
+
   public pushState(state: State) {
-    const lastState = this.states[this.states.length - 1];
-    lastState.onExit();
+    const lastState = this.getCurrentState();
+
+    if (lastState) {
+      // Exit the last state before entering the new one
+      lastState.onExit();
+    }
+
     state.onEnter();
     this.states.push(state);
   }
 
   public popState() {
-    const lastState = this.states[this.states.length - 1];
-    lastState.onExit();
-    this.states.pop();
-    const newState = this.states[this.states.length - 1];
+    const lastState = this.states.pop();
+
+    if (lastState) {
+      // Exit the last state before entering the new one
+      lastState.onExit();
+    }
+
+    const newState = this.getCurrentState();
     newState.onEnter();
   }
 
-  private resetCanvas() {
+  private handleResize() {
     this.canvas.width = this.canvas.clientWidth;
     this.canvas.height = this.canvas.clientHeight;
-
-    const ctx = this.canvas.getContext("2d");
-
-    if (!ctx) {
-      throw new Error("Cannot get 2d context from canvas");
-    }
 
     this.logger.debug("Canvas resized to", {
       width: this.canvas.width,
       height: this.canvas.height,
     });
+
+    // Resize current state
+    try {
+      const state = this.getCurrentState();
+      state?.handleResize();
+    } catch (error) {
+      this.logger.error("Error resizing current state", error);
+    }
   }
 
   private loop(currentTime: number) {
-    const delta =
+    let delta =
       this.lastUpdate > 0 ? (currentTime - this.lastUpdate) / 1000 : 0;
     this.lastUpdate = currentTime;
+
+    // Cancel the loop if the delta is too large (e.g. when tab is inactive)
+    if (delta > 1) {
+      delta = 0;
+    }
 
     if (!this.running) {
       this.logger.debug("Efb is not running, stopping loop");
@@ -103,15 +127,17 @@ export default class Efb {
     }
 
     try {
-      const state = this.states[this.states.length - 1];
+      const state = this.getCurrentState();
 
-      if (this.isVisible) {
-        // Update all states
-        state.update(delta);
+      // Update all states
+      state.update(delta);
 
-        // Render all states
+      // Render all states
+      if (state.shouldRender && this.isVisible) {
         state.render(this.canvas);
       }
+
+      this.canvas.getContext("2d")?.drawImage(state.canvas, 0, 0);
     } catch (error) {
       this.logger.error("Error in game loop", error);
     }

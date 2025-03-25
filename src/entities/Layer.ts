@@ -10,18 +10,27 @@ export default class Layer {
     Object.assign(this, options);
 
     this.canvas = document.createElement("canvas");
-    this.canvas.width = this.parentCanvas.width;
-    this.canvas.height = this.parentCanvas.height;
-
     this.ctx = this.canvas.getContext("2d");
     if (!this.ctx) {
       throw new Error("Cannot get 2d context from canvas");
     }
 
-    if (this.backgroundColor) {
-      this.ctx.fillStyle = this.backgroundColor;
-      this.ctx.fillRect(0, 0, parentCanvas.width, parentCanvas.height);
+    this.handleResize();
+    this.clear();
+  }
+
+  public handleResize() {
+    this.canvas.width = this.parentCanvas.width;
+    this.canvas.height = this.parentCanvas.height;
+  }
+
+  public clear() {
+    if (!this.backgroundColor || !this.ctx) {
+      return;
     }
+
+    this.ctx.fillStyle = this.backgroundColor;
+    this.ctx.fillRect(0, 0, this.parentCanvas.width, this.parentCanvas.height);
   }
 
   withLayer(
