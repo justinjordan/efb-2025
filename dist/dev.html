@@ -691,7 +691,8 @@ var _mainTs = require("./src/main.ts");
 var _mainTsDefault = parcelHelpers.interopDefault(_mainTs);
 const canvas = document.getElementById('efb-game');
 const game = new (0, _mainTsDefault.default)(canvas, {
-    debug: true
+    debug: true,
+    loader: true
 });
 game.start();
 
@@ -732,8 +733,11 @@ var _loglevel = require("loglevel");
 var _loglevelDefault = parcelHelpers.interopDefault(_loglevel);
 var _gameState = require("./states/GameState");
 var _gameStateDefault = parcelHelpers.interopDefault(_gameState);
+var _loaderState = require("./states/LoaderState");
+var _loaderStateDefault = parcelHelpers.interopDefault(_loaderState);
 const defaultOptions = {
-    debug: false
+    debug: false,
+    loader: false
 };
 class Efb {
     constructor(canvas, options = defaultOptions){
@@ -756,9 +760,9 @@ class Efb {
         this.running = true;
         this.logger.debug("Efb is running");
         // Add the first state
-        const state = new (0, _gameStateDefault.default)(this);
-        state.handleEnter();
+        const state = this.options.loader ? new (0, _loaderStateDefault.default)(this) : new (0, _gameStateDefault.default)(this);
         this.states.push(state);
+        state.handleEnter();
         // Start the game loop
         requestAnimationFrame(this.loop.bind(this));
     }
@@ -834,7 +838,7 @@ class Efb {
 }
 exports.default = Efb;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","loglevel":"7kRFs","./states/GameState":"lUNvG"}],"7kRFs":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","loglevel":"7kRFs","./states/GameState":"lUNvG","./states/LoaderState":"dfxSB"}],"7kRFs":[function(require,module,exports,__globalThis) {
 /*
 * loglevel - https://github.com/pimterry/loglevel
 *
@@ -1278,8 +1282,9 @@ class Layer {
         this.parentCanvas = parentCanvas;
         Object.assign(this, options);
         this.canvas = document.createElement("canvas");
-        this.ctx = this.canvas.getContext("2d");
-        if (!this.ctx) throw new Error("Cannot get 2d context from canvas");
+        const ctx = this.canvas.getContext("2d");
+        if (!ctx) throw new Error("Cannot get 2d context from canvas");
+        this.ctx = ctx;
         this.handleResize();
         this.clear();
     }
@@ -1391,7 +1396,63 @@ class Ball {
 }
 exports.default = Ball;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["coqxu","ifSeS"], "ifSeS", "parcelRequirebcdb")
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dfxSB":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _layer = require("../entities/Layer");
+var _layerDefault = parcelHelpers.interopDefault(_layer);
+var _state = require("../types/State");
+var _stateDefault = parcelHelpers.interopDefault(_state);
+var _gameState = require("./GameState");
+var _gameStateDefault = parcelHelpers.interopDefault(_gameState);
+class LoaderState extends (0, _stateDefault.default) {
+    constructor(game){
+        super(game), this.game = game, this.bytesLoaded = 0, this.bytesTotal = 10000;
+        this.infoLayer = new (0, _layerDefault.default)(this.canvas);
+        this.backgroundLayer = new (0, _layerDefault.default)(this.canvas, {
+            backgroundColor: "#023"
+        });
+    }
+    onKeyup(e) {
+        if (e.key === "Enter" && this.bytesLoaded >= this.bytesTotal) this.game.pushState(new (0, _gameStateDefault.default)(this.game)); // Push the game state
+    }
+    update(delta) {
+        if (!this.game.canvas.checkVisibility()) return;
+        const duration = 4; // Duration of the loading screen in seconds
+        this.bytesLoaded += this.bytesTotal / duration * delta; // Simulate loading progress
+        if (this.bytesLoaded >= this.bytesTotal) this.bytesLoaded = this.bytesTotal;
+        this.infoLayer.withLayer((canvas, ctx)=>{
+            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            const percentage = Math.floor(100 * this.bytesLoaded / this.bytesTotal);
+            ctx.fillStyle = "#fff";
+            ctx.font = "12px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("Loading...", this.canvas.width / 2 - 74, this.canvas.height / 2 - 15);
+            ctx.fillText(`${percentage}%`, this.canvas.width / 2, this.canvas.height / 2 + 15);
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.rect(this.canvas.width / 2 - 100, this.canvas.height / 2 - 5, 200, 10);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.rect(this.canvas.width / 2 - 100, this.canvas.height / 2 - 5, 200 * (this.bytesLoaded / this.bytesTotal), 10);
+            ctx.fill();
+            if (this.bytesLoaded >= this.bytesTotal) {
+                ctx.fillStyle = "#0f0";
+                ctx.fillText("Hit ENTER to continue.", this.canvas.width / 2, this.canvas.height / 2 + 35);
+            }
+        });
+    }
+    render(ctx) {
+        this.ctx.drawImage(this.backgroundLayer.canvas, 0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.drawImage(this.infoLayer.canvas, 0, 0, this.canvas.width, this.canvas.height);
+        ctx.drawImage(this.canvas, 0, 0, this.canvas.width, this.canvas.height);
+    }
+}
+exports.default = LoaderState;
+
+},{"../types/State":"wP82z","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../entities/Layer":"6a4kO","./GameState":"lUNvG"}]},["coqxu","ifSeS"], "ifSeS", "parcelRequirebcdb")
 
 </script>
 </body>

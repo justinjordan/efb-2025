@@ -59,8 +59,9 @@ class $565a624516254204$export$2e2bcd8739ae039 {
         this.parentCanvas = parentCanvas;
         Object.assign(this, options);
         this.canvas = document.createElement("canvas");
-        this.ctx = this.canvas.getContext("2d");
-        if (!this.ctx) throw new Error("Cannot get 2d context from canvas");
+        const ctx = this.canvas.getContext("2d");
+        if (!ctx) throw new Error("Cannot get 2d context from canvas");
+        this.ctx = ctx;
         this.handleResize();
         this.clear();
     }
@@ -311,8 +312,59 @@ class $88c64d01b002ea7b$export$2e2bcd8739ae039 extends (0, $c6e9585522073c38$exp
 }
 
 
+
+
+
+class $b964b02ff2e11b82$export$2e2bcd8739ae039 extends (0, $c6e9585522073c38$export$2e2bcd8739ae039) {
+    constructor(game){
+        super(game), this.game = game, this.bytesLoaded = 0, this.bytesTotal = 10000;
+        this.infoLayer = new (0, $565a624516254204$export$2e2bcd8739ae039)(this.canvas);
+        this.backgroundLayer = new (0, $565a624516254204$export$2e2bcd8739ae039)(this.canvas, {
+            backgroundColor: "#023"
+        });
+    }
+    onKeyup(e) {
+        if (e.key === "Enter" && this.bytesLoaded >= this.bytesTotal) this.game.pushState(new (0, $88c64d01b002ea7b$export$2e2bcd8739ae039)(this.game)); // Push the game state
+    }
+    update(delta) {
+        if (!this.game.canvas.checkVisibility()) return;
+        const duration = 4; // Duration of the loading screen in seconds
+        this.bytesLoaded += this.bytesTotal / duration * delta; // Simulate loading progress
+        if (this.bytesLoaded >= this.bytesTotal) this.bytesLoaded = this.bytesTotal;
+        this.infoLayer.withLayer((canvas, ctx)=>{
+            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            const percentage = Math.floor(100 * this.bytesLoaded / this.bytesTotal);
+            ctx.fillStyle = "#fff";
+            ctx.font = "12px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("Loading...", this.canvas.width / 2 - 74, this.canvas.height / 2 - 15);
+            ctx.fillText(`${percentage}%`, this.canvas.width / 2, this.canvas.height / 2 + 15);
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.rect(this.canvas.width / 2 - 100, this.canvas.height / 2 - 5, 200, 10);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.rect(this.canvas.width / 2 - 100, this.canvas.height / 2 - 5, 200 * (this.bytesLoaded / this.bytesTotal), 10);
+            ctx.fill();
+            if (this.bytesLoaded >= this.bytesTotal) {
+                ctx.fillStyle = "#0f0";
+                ctx.fillText("Hit ENTER to continue.", this.canvas.width / 2, this.canvas.height / 2 + 35);
+            }
+        });
+    }
+    render(ctx) {
+        this.ctx.drawImage(this.backgroundLayer.canvas, 0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.drawImage(this.infoLayer.canvas, 0, 0, this.canvas.width, this.canvas.height);
+        ctx.drawImage(this.canvas, 0, 0, this.canvas.width, this.canvas.height);
+    }
+}
+
+
 const $53ffd25df6034fb9$var$defaultOptions = {
-    debug: false
+    debug: false,
+    loader: false
 };
 class $53ffd25df6034fb9$export$2e2bcd8739ae039 {
     constructor(canvas, options = $53ffd25df6034fb9$var$defaultOptions){
@@ -335,9 +387,9 @@ class $53ffd25df6034fb9$export$2e2bcd8739ae039 {
         this.running = true;
         this.logger.debug("Efb is running");
         // Add the first state
-        const state = new (0, $88c64d01b002ea7b$export$2e2bcd8739ae039)(this);
-        state.handleEnter();
+        const state = this.options.loader ? new (0, $b964b02ff2e11b82$export$2e2bcd8739ae039)(this) : new (0, $88c64d01b002ea7b$export$2e2bcd8739ae039)(this);
         this.states.push(state);
+        state.handleEnter();
         // Start the game loop
         requestAnimationFrame(this.loop.bind(this));
     }

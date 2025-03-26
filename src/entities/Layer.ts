@@ -1,6 +1,6 @@
 export default class Layer {
   public canvas: HTMLCanvasElement;
-  public ctx: CanvasRenderingContext2D | null;
+  public ctx: CanvasRenderingContext2D;
   backgroundColor?: string;
 
   constructor(
@@ -10,10 +10,11 @@ export default class Layer {
     Object.assign(this, options);
 
     this.canvas = document.createElement("canvas");
-    this.ctx = this.canvas.getContext("2d");
-    if (!this.ctx) {
+    const ctx = this.canvas.getContext("2d");
+    if (!ctx) {
       throw new Error("Cannot get 2d context from canvas");
     }
+    this.ctx = ctx;
 
     this.handleResize();
     this.clear();

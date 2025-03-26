@@ -1,7 +1,4 @@
 import log from "loglevel";
-interface GameOptions {
-    debug?: boolean;
-}
 declare abstract class State {
     game: Efb;
     canvas: HTMLCanvasElement;
@@ -26,6 +23,11 @@ declare abstract class State {
     handleMouseUp(e: MouseEvent): void;
     handleMouseMove(e: MouseEvent): void;
 }
+declare const defaultOptions: {
+    debug: boolean;
+    loader: boolean;
+};
+type GameOptions = Partial<typeof defaultOptions>;
 export default class Efb {
     canvas: HTMLCanvasElement;
     logger: log.Logger;

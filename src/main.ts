@@ -1,11 +1,14 @@
 import log from "loglevel";
-import GameOptions from "./types/Options";
 import State from "./types/State";
 import GameState from "./states/GameState";
+import LoaderState from "./states/LoaderState";
 
 const defaultOptions = {
   debug: false,
+  loader: false,
 };
+
+type GameOptions = Partial<typeof defaultOptions>;
 
 export default class Efb {
   logger = log.getLogger("Efb");
@@ -34,9 +37,11 @@ export default class Efb {
     this.logger.debug("Efb is running");
 
     // Add the first state
-    const state = new GameState(this);
-    state.handleEnter();
+    const state = this.options.loader
+      ? new LoaderState(this)
+      : new GameState(this);
     this.states.push(state);
+    state.handleEnter();
 
     // Start the game loop
     requestAnimationFrame(this.loop.bind(this));
