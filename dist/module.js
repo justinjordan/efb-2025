@@ -1,26 +1,16 @@
 import $doaur$loglevel from "loglevel";
 
 
-class $f94dd35d7e4c47f0$export$2e2bcd8739ae039 {
-    constructor(){
-        this.shouldRender = true;
-    }
-}
-
-
-class $c95e6a7d1d02e936$export$2e2bcd8739ae039 extends (0, $f94dd35d7e4c47f0$export$2e2bcd8739ae039) {
+class $c95e6a7d1d02e936$export$2e2bcd8739ae039 {
     constructor(options){
-        super(), this.x = 0, this.y = 0, this.pastPositions = [], this.xSpeed = 0, this.ySpeed = 0, this.radius = 20, this.color = "#00f";
+        this.x = 0;
+        this.y = 0;
+        this.pastPositions = [];
+        this.xSpeed = 0;
+        this.ySpeed = 0;
+        this.radius = 20;
+        this.color = "#00f";
         Object.assign(this, options);
-    }
-    onEnter() {
-    // do nothing
-    }
-    onExit() {
-    // do nothing
-    }
-    handleResize() {
-    // do nothing
     }
     update(delta) {
         this.pastPositions.push({
@@ -31,7 +21,7 @@ class $c95e6a7d1d02e936$export$2e2bcd8739ae039 extends (0, $f94dd35d7e4c47f0$exp
         this.x += this.xSpeed * delta;
         this.y += this.ySpeed * delta;
     }
-    render(canvas) {
+    draw(canvas) {
         const ctx = canvas.getContext("2d");
         if (!ctx) throw new Error("Cannot get 2d context from canvas");
         ctx.beginPath();
@@ -75,104 +65,156 @@ class $185b6a29245bc483$export$2e2bcd8739ae039 {
 }
 
 
+class $f94dd35d7e4c47f0$export$2e2bcd8739ae039 {
+    constructor(game){
+        this.game = game;
+        this.isActive = false;
+        this.canvas = document.createElement("canvas");
+        this.canvas.width = this.game.canvas.width;
+        this.canvas.height = this.game.canvas.height;
+        const ctx = this.canvas.getContext("2d");
+        if (!ctx) throw new Error("Cannot get 2d context from canvas");
+        this.ctx = ctx;
+        this.handleEnter = this.handleEnter.bind(this);
+        this.handleExit = this.handleExit.bind(this);
+        this.handleKeyup = this.handleKeyup.bind(this);
+        this.handleMouseDown = this.handleMouseDown.bind(this);
+        this.handleMouseUp = this.handleMouseUp.bind(this);
+        this.handleMouseMove = this.handleMouseMove.bind(this);
+        this.handleResize = this.handleResize.bind(this);
+    }
+    onEnter() {}
+    onExit() {}
+    onKeyup(e) {}
+    onMouseDown(e) {}
+    onMouseUp(e) {}
+    onMouseMove(e) {}
+    onResize() {}
+    beforeRender() {}
+    handleEnter() {
+        this.isActive = true;
+        document.addEventListener("keyup", this.handleKeyup);
+        document.addEventListener("mousedown", this.handleMouseDown);
+        document.addEventListener("mouseup", this.handleMouseUp);
+        document.addEventListener("mousemove", this.handleMouseMove);
+        this.onEnter();
+    }
+    handleExit() {
+        this.isActive = false;
+        document.removeEventListener("keyup", this.handleKeyup);
+        document.removeEventListener("mousedown", this.handleMouseDown);
+        document.removeEventListener("mouseup", this.handleMouseUp);
+        document.removeEventListener("mousemove", this.handleMouseMove);
+        this.onExit();
+    }
+    handleKeyup(e) {
+        this.onKeyup(e);
+    }
+    handleResize() {
+        this.canvas.width = this.game.canvas.width;
+        this.canvas.height = this.game.canvas.height;
+        this.onResize();
+    }
+    handleMouseDown(e) {
+        this.onMouseDown(e);
+    }
+    handleMouseUp(e) {
+        this.onMouseUp(e);
+    }
+    handleMouseMove(e) {
+        this.onMouseMove(e);
+    }
+}
+
 
 
 class $3c9a1211b363cd3e$export$2e2bcd8739ae039 extends (0, $f94dd35d7e4c47f0$export$2e2bcd8739ae039) {
     constructor(game){
-        super(), this.game = game;
-        this.canvas = document.createElement("canvas");
+        super(game), this.game = game;
         this.handleKeyup = this.handleKeyup.bind(this);
     }
-    handleKeyup(e) {
+    onKeyup(e) {
         if (e.key === "p") this.game.popState();
     }
-    handleResize() {
-        this.shouldRender = true; // Allow rendering on resize
-    }
     onEnter() {
-        document.addEventListener("keyup", this.handleKeyup);
-    }
-    onExit() {
-        document.removeEventListener("keyup", this.handleKeyup);
-    }
-    update(delta) {
-    // do nothing
-    }
-    render(canvas) {
-        const ctx = canvas.getContext("2d");
-        if (!ctx) throw new Error("Cannot get 2d context from canvas");
-        this.game.getPreviousState()?.render(canvas);
         const width = 300;
         const height = 200;
+        // Clear the canvas
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         // Draw the pause overlay
-        ctx.fillStyle = "#333";
-        ctx.shadowColor = "rgba(0, 0, 0, 0.7)";
-        ctx.shadowOffsetX = 5;
-        ctx.shadowOffsetY = 5;
-        ctx.shadowBlur = 30;
-        ctx.roundRect(canvas.width / 2 - width / 2, canvas.height / 2 - height / 2, width, height, 10);
-        ctx.fill();
-        ctx.shadowColor = "transparent"; // Reset shadow
+        this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        this.ctx.shadowColor = "rgba(0, 0, 0, 0.7)";
+        this.ctx.shadowOffsetX = 5;
+        this.ctx.shadowOffsetY = 5;
+        this.ctx.shadowBlur = 30;
+        this.ctx.roundRect(this.canvas.width / 2 - width / 2, this.canvas.height / 2 - height / 2, width, height, 10);
+        this.ctx.fill();
+        this.ctx.shadowColor = "transparent"; // Reset shadow
         // Draw the pause text
-        ctx.fillStyle = "#fff";
-        ctx.font = "bold 24px sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("Paused", canvas.width / 2, canvas.height / 2 - 20);
-        ctx.font = "16px sans-serif";
-        ctx.fillText("Press 'p' to resume", canvas.width / 2, canvas.height / 2 + 20);
-        this.shouldRender = false; // Prevents continuous rendering
+        this.ctx.fillStyle = "#fff";
+        this.ctx.font = "bold 24px sans-serif";
+        this.ctx.textAlign = "center";
+        this.ctx.textBaseline = "middle";
+        this.ctx.fillText("Paused", this.canvas.width / 2, this.canvas.height / 2 - 20);
+        this.ctx.font = "16px sans-serif";
+        this.ctx.fillText("Press 'p' to resume", this.canvas.width / 2, this.canvas.height / 2 + 20);
+    }
+    onResize() {
+        this.onEnter();
+    }
+    update(delta) {}
+    render(ctx) {
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // Render the previous state
+        const gameState = this.game.getPreviousState();
+        ctx.drawImage(gameState.canvas, 0, 0);
+        // Render the pause overlay
+        ctx.drawImage(this.canvas, 0, 0);
     }
 }
 
 
 class $06ea7b158ce0d77d$export$2e2bcd8739ae039 extends (0, $f94dd35d7e4c47f0$export$2e2bcd8739ae039) {
     constructor(game){
-        super(), this.game = game, this.balls = [], this.heldBall = null, this.mouseDown = false, this.mouseX = 0, this.mouseY = 0, this.handleMouseDown = (e)=>{
-            this.mouseDown = true;
-        }, this.handleMouseUp = (e)=>{
-            this.mouseDown = false;
-            this.heldBall = null;
-        }, this.handleMouseMove = (e)=>{
-            const rect = this.game.canvas.getBoundingClientRect();
-            this.mouseX = e.clientX - rect.left;
-            this.mouseY = e.clientY - rect.top;
-        };
-        this.canvas = document.createElement("canvas");
-        this.canvas.width = this.game.canvas.width;
-        this.canvas.height = this.game.canvas.height;
+        super(game), this.game = game, this.balls = [], this.heldBall = null, this.mouseDown = false, this.mouseX = 0, this.mouseY = 0;
         this.ballLayer = new (0, $185b6a29245bc483$export$2e2bcd8739ae039)(this.canvas);
         this.trailLayer = new (0, $185b6a29245bc483$export$2e2bcd8739ae039)(this.canvas);
         this.backgroundLayer = new (0, $185b6a29245bc483$export$2e2bcd8739ae039)(this.canvas, {
             backgroundColor: "#023"
         });
-        for(let i = 0; i < 3; i++)this.balls.push(new (0, $c95e6a7d1d02e936$export$2e2bcd8739ae039)({
-            x: this.canvas.width * Math.random(),
-            y: this.canvas.height * Math.random(),
-            xSpeed: (300 * Math.random() + 200) * (Math.random() > 0.5 ? 1 : -1),
-            ySpeed: (300 * Math.random() + 200) * (Math.random() > 0.5 ? 1 : -1)
+        this.balls.push(new (0, $c95e6a7d1d02e936$export$2e2bcd8739ae039)({
+            x: this.canvas.width / 2,
+            y: this.canvas.height / 2 - 100,
+            xSpeed: 500,
+            ySpeed: 0
+        }));
+        this.balls.push(new (0, $c95e6a7d1d02e936$export$2e2bcd8739ae039)({
+            x: this.canvas.width / 2,
+            y: this.canvas.height / 2 + 100,
+            xSpeed: -500,
+            ySpeed: 0
         }));
         this.handleKeyup = this.handleKeyup.bind(this);
     }
-    handleKeyup(e) {
-        if (e.key === "p") this.pauseGame();
+    onKeyup(e) {
+        if (e.key === "p") this.game.pushState(new (0, $3c9a1211b363cd3e$export$2e2bcd8739ae039)(this.game));
     }
-    handleResize() {
+    onMouseDown(e) {
+        this.mouseDown = true;
+    }
+    onMouseUp(e) {
+        this.mouseDown = false;
+        this.heldBall = null;
+    }
+    onMouseMove(e) {
+        const rect = this.game.canvas.getBoundingClientRect();
+        this.mouseX = e.clientX - rect.left;
+        this.mouseY = e.clientY - rect.top;
+    }
+    onResize() {
         this.ballLayer.handleResize();
         this.trailLayer.handleResize();
         this.backgroundLayer.handleResize();
-    }
-    onEnter() {
-        document.addEventListener("keyup", this.handleKeyup);
-        document.addEventListener("mousedown", this.handleMouseDown);
-        document.addEventListener("mouseup", this.handleMouseUp);
-        document.addEventListener("mousemove", this.handleMouseMove);
-    }
-    onExit() {
-        document.removeEventListener("keyup", this.handleKeyup);
-        document.removeEventListener("mousedown", this.handleMouseDown);
-        document.removeEventListener("mouseup", this.handleMouseUp);
-        document.removeEventListener("mousemove", this.handleMouseMove);
     }
     update(delta) {
         this.balls.forEach((ball)=>ball.update(delta));
@@ -217,13 +259,9 @@ class $06ea7b158ce0d77d$export$2e2bcd8739ae039 extends (0, $f94dd35d7e4c47f0$exp
             this.heldBall.xSpeed = 0;
             this.heldBall.ySpeed = 0;
         }
-    }
-    render() {
-        const ctx = this.canvas.getContext("2d");
-        if (!ctx) throw new Error("Cannot get 2d context from canvas");
         this.ballLayer.withLayer((canvas, ctx)=>{
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            this.balls.forEach((ball)=>ball.render(canvas));
+            this.balls.forEach((ball)=>ball.draw(canvas));
         });
         this.trailLayer.withLayer((canvas, ctx)=>{
             this.balls.forEach((ball)=>{
@@ -247,12 +285,12 @@ class $06ea7b158ce0d77d$export$2e2bcd8739ae039 extends (0, $f94dd35d7e4c47f0$exp
             ctx.filter = "none";
         });
         this.backgroundLayer.clear();
-        ctx.drawImage(this.backgroundLayer.canvas, 0, 0);
-        ctx.drawImage(this.trailLayer.canvas, 0, 0);
-        ctx.drawImage(this.ballLayer.canvas, 0, 0);
+        this.ctx.drawImage(this.backgroundLayer.canvas, 0, 0);
+        this.ctx.drawImage(this.trailLayer.canvas, 0, 0);
+        this.ctx.drawImage(this.ballLayer.canvas, 0, 0);
     }
-    pauseGame() {
-        this.game.pushState(new (0, $3c9a1211b363cd3e$export$2e2bcd8739ae039)(this.game));
+    render(ctx) {
+        ctx.drawImage(this.canvas, 0, 0);
     }
 }
 
@@ -266,7 +304,6 @@ class $b013a5dd6d18443e$export$2e2bcd8739ae039 {
         this.logger = (0, $doaur$loglevel).getLogger("Efb");
         this.states = [];
         this.running = false;
-        this.isVisible = true;
         this.lastUpdate = 0;
         this.options = {
             ...$b013a5dd6d18443e$var$defaultOptions,
@@ -275,10 +312,6 @@ class $b013a5dd6d18443e$export$2e2bcd8739ae039 {
         this.handleResize();
         const resizeObserver = new ResizeObserver(()=>this.handleResize());
         resizeObserver.observe(this.canvas);
-        document.addEventListener("visibilitychange", ()=>{
-            this.isVisible = document.visibilityState === "visible";
-            this.logger.debug("Visibility change", this.isVisible);
-        });
         this.logger.setLevel(options.debug ? "debug" : "silent");
         this.logger.debug("Efb initialized with options", this.options);
     }
@@ -287,7 +320,7 @@ class $b013a5dd6d18443e$export$2e2bcd8739ae039 {
         this.logger.debug("Efb is running");
         // Add the first state
         const state = new (0, $06ea7b158ce0d77d$export$2e2bcd8739ae039)(this);
-        state.onEnter();
+        state.handleEnter();
         this.states.push(state);
         // Start the game loop
         requestAnimationFrame(this.loop.bind(this));
@@ -306,16 +339,16 @@ class $b013a5dd6d18443e$export$2e2bcd8739ae039 {
     pushState(state) {
         const lastState = this.getCurrentState();
         if (lastState) // Exit the last state before entering the new one
-        lastState.onExit();
-        state.onEnter();
+        lastState.handleExit();
+        state.handleEnter();
         this.states.push(state);
     }
     popState() {
         const lastState = this.states.pop();
         if (lastState) // Exit the last state before entering the new one
-        lastState.onExit();
+        lastState.handleExit();
         const newState = this.getCurrentState();
-        newState.onEnter();
+        newState.handleEnter();
     }
     handleResize() {
         this.canvas.width = this.canvas.clientWidth;
@@ -324,10 +357,10 @@ class $b013a5dd6d18443e$export$2e2bcd8739ae039 {
             width: this.canvas.width,
             height: this.canvas.height
         });
-        // Resize current state
         try {
-            const state = this.getCurrentState();
-            state?.handleResize();
+            this.states.forEach((state)=>{
+                state?.handleResize();
+            });
         } catch (error) {
             this.logger.error("Error resizing current state", error);
         }
@@ -349,11 +382,12 @@ class $b013a5dd6d18443e$export$2e2bcd8739ae039 {
         }
         try {
             const state = this.getCurrentState();
+            const ctx = this.canvas.getContext("2d");
+            if (!ctx) throw new Error("Cannot get 2d context from canvas");
             // Update all states
             state.update(delta);
-            // Render all states
-            if (state.shouldRender && this.isVisible) state.render(this.canvas);
-            this.canvas.getContext("2d")?.drawImage(state.canvas, 0, 0);
+            // Render the current state
+            state.render(ctx);
         } catch (error) {
             this.logger.error("Error in game loop", error);
         }
