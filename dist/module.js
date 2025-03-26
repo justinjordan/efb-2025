@@ -304,20 +304,16 @@ class $06ea7b158ce0d77d$export$2e2bcd8739ae039 extends (0, $f94dd35d7e4c47f0$exp
 
 class $dba7dd1cf2c5fe3f$export$2e2bcd8739ae039 extends (0, $f94dd35d7e4c47f0$export$2e2bcd8739ae039) {
     constructor(game){
-        super(game), this.game = game, this.bytesLoaded = 0, this.bytesTotal = 10000, this.active = false;
+        super(game), this.game = game, this.bytesLoaded = 0, this.bytesTotal = 10000;
         this.infoLayer = new (0, $185b6a29245bc483$export$2e2bcd8739ae039)(this.canvas);
         this.backgroundLayer = new (0, $185b6a29245bc483$export$2e2bcd8739ae039)(this.canvas, {
             backgroundColor: "#023"
         });
     }
-    onMouseMove(e, mouseX, mouseY) {
-        if (mouseX > 0 && mouseX < this.canvas.width && mouseY > 0 && mouseY < this.canvas.height) this.active = true; // Set active to true if mouse is within canvas bounds
-    }
     onKeyup(e) {
         if (e.key === "Enter" && this.bytesLoaded >= this.bytesTotal) this.game.pushState(new (0, $06ea7b158ce0d77d$export$2e2bcd8739ae039)(this.game)); // Push the game state
     }
     update(delta) {
-        if (!this.active) return;
         const duration = 4; // Duration of the loading screen in seconds
         this.bytesLoaded += this.bytesTotal / duration * delta; // Simulate loading progress
         if (this.bytesLoaded >= this.bytesTotal) this.bytesLoaded = this.bytesTotal;
@@ -326,10 +322,11 @@ class $dba7dd1cf2c5fe3f$export$2e2bcd8739ae039 extends (0, $f94dd35d7e4c47f0$exp
             const percentage = Math.floor(100 * this.bytesLoaded / this.bytesTotal);
             ctx.fillStyle = "#fff";
             ctx.font = "12px sans-serif";
-            ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillText("Loading...", this.canvas.width / 2 - 74, this.canvas.height / 2 - 15);
-            ctx.fillText(`${percentage}%`, this.canvas.width / 2, this.canvas.height / 2 + 15);
+            ctx.textAlign = "left";
+            ctx.fillText("Loading...", this.canvas.width / 2 - 100, this.canvas.height / 2 - 15);
+            ctx.textAlign = "right";
+            ctx.fillText(`${percentage}%`, this.canvas.width / 2 + 100, this.canvas.height / 2 - 15);
             ctx.strokeStyle = "#fff";
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -339,8 +336,9 @@ class $dba7dd1cf2c5fe3f$export$2e2bcd8739ae039 extends (0, $f94dd35d7e4c47f0$exp
             ctx.rect(this.canvas.width / 2 - 100, this.canvas.height / 2 - 5, 200 * (this.bytesLoaded / this.bytesTotal), 10);
             ctx.fill();
             if (this.bytesLoaded >= this.bytesTotal) {
+                ctx.textAlign = "center";
                 ctx.fillStyle = "#0f0";
-                ctx.fillText("Hit ENTER to continue.", this.canvas.width / 2, this.canvas.height / 2 + 35);
+                ctx.fillText("Press Enter to start", this.canvas.width / 2, this.canvas.height / 2 + 35);
             }
         });
     }

@@ -8,24 +8,12 @@ export default class LoaderState extends State {
   bytesTotal: number = 10000;
   infoLayer: Layer;
   backgroundLayer: Layer;
-  active: boolean = false;
 
   constructor(public game: Efb) {
     super(game);
 
     this.infoLayer = new Layer(this.canvas);
     this.backgroundLayer = new Layer(this.canvas, { backgroundColor: "#023" });
-  }
-
-  onMouseMove(e: MouseEvent, mouseX: number, mouseY: number): void {
-    if (
-      mouseX > 0 &&
-      mouseX < this.canvas.width &&
-      mouseY > 0 &&
-      mouseY < this.canvas.height
-    ) {
-      this.active = true; // Set active to true if mouse is within canvas bounds
-    }
   }
 
   onKeyup(e: KeyboardEvent): void {
@@ -35,8 +23,6 @@ export default class LoaderState extends State {
   }
 
   update(delta: number): void {
-    if (!this.active) return;
-
     const duration = 4; // Duration of the loading screen in seconds
     this.bytesLoaded += (this.bytesTotal / duration) * delta; // Simulate loading progress
     if (this.bytesLoaded >= this.bytesTotal) {
@@ -50,17 +36,18 @@ export default class LoaderState extends State {
 
       ctx.fillStyle = "#fff";
       ctx.font = "12px sans-serif";
-      ctx.textAlign = "center";
       ctx.textBaseline = "middle";
+      ctx.textAlign = "left";
       ctx.fillText(
         "Loading...",
-        this.canvas.width / 2 - 74,
+        this.canvas.width / 2 - 100,
         this.canvas.height / 2 - 15
       );
+      ctx.textAlign = "right";
       ctx.fillText(
         `${percentage}%`,
-        this.canvas.width / 2,
-        this.canvas.height / 2 + 15
+        this.canvas.width / 2 + 100,
+        this.canvas.height / 2 - 15
       );
 
       ctx.strokeStyle = "#fff";
@@ -84,9 +71,10 @@ export default class LoaderState extends State {
       ctx.fill();
 
       if (this.bytesLoaded >= this.bytesTotal) {
+        ctx.textAlign = "center";
         ctx.fillStyle = "#0f0";
         ctx.fillText(
-          "Hit ENTER to continue.",
+          "Press Enter to start",
           this.canvas.width / 2,
           this.canvas.height / 2 + 35
         );
