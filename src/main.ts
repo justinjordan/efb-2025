@@ -12,7 +12,6 @@ export default class Efb {
   options: GameOptions;
   states: State[] = [];
   running = false;
-  isVisible = true;
 
   private lastUpdate = 0;
 
@@ -26,11 +25,6 @@ export default class Efb {
     const resizeObserver = new ResizeObserver(() => this.handleResize());
     resizeObserver.observe(this.canvas);
 
-    document.addEventListener("visibilitychange", () => {
-      this.isVisible = document.visibilityState === "visible";
-      this.logger.debug("Visibility change", this.isVisible);
-    });
-
     this.logger.setLevel(options.debug ? "debug" : "silent");
     this.logger.debug("Efb initialized with options", this.options);
   }
@@ -41,7 +35,7 @@ export default class Efb {
 
     // Add the first state
     const state = new GameState(this);
-    state.onEnter();
+    state.handleEnter();
     this.states.push(state);
 
     // Start the game loop
@@ -67,10 +61,10 @@ export default class Efb {
 
     if (lastState) {
       // Exit the last state before entering the new one
-      lastState.onExit();
+      lastState.handleExit();
     }
 
-    state.onEnter();
+    state.handleEnter();
     this.states.push(state);
   }
 
@@ -79,11 +73,11 @@ export default class Efb {
 
     if (lastState) {
       // Exit the last state before entering the new one
-      lastState.onExit();
+      lastState.handleExit();
     }
 
     const newState = this.getCurrentState();
-    newState.onEnter();
+    newState.handleEnter();
   }
 
   private handleResize() {
@@ -95,10 +89,10 @@ export default class Efb {
       height: this.canvas.height,
     });
 
-    // Resize current state
     try {
-      const state = this.getCurrentState();
-      state?.handleResize();
+      this.states.forEach((state) => {
+        state?.handleResize();
+      });
     } catch (error) {
       this.logger.error("Error resizing current state", error);
     }
@@ -128,16 +122,17 @@ export default class Efb {
 
     try {
       const state = this.getCurrentState();
+      const ctx = this.canvas.getContext("2d");
+
+      if (!ctx) {
+        throw new Error("Cannot get 2d context from canvas");
+      }
 
       // Update all states
       state.update(delta);
 
-      // Render all states
-      if (state.shouldRender && this.isVisible) {
-        state.render(this.canvas);
-      }
-
-      this.canvas.getContext("2d")?.drawImage(state.canvas, 0, 0);
+      // Render the current state
+      state.render(ctx);
     } catch (error) {
       this.logger.error("Error in game loop", error);
     }

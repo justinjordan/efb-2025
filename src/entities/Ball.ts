@@ -1,6 +1,7 @@
+import Efb from "../main";
 import State from "../types/State";
 
-export default class Ball extends State {
+export default class Ball {
   x: number = 0;
   y: number = 0;
   pastPositions: { x: number; y: number }[] = [];
@@ -10,20 +11,7 @@ export default class Ball extends State {
   color: string = "#00f";
 
   constructor(options?: Partial<Ball>) {
-    super();
     Object.assign(this, options);
-  }
-
-  onEnter(): void {
-    // do nothing
-  }
-
-  onExit(): void {
-    // do nothing
-  }
-
-  handleResize(): void {
-    // do nothing
   }
 
   update(delta: number): void {
@@ -36,7 +24,7 @@ export default class Ball extends State {
     this.y += this.ySpeed * delta;
   }
 
-  render(canvas: HTMLCanvasElement): void {
+  draw(canvas: HTMLCanvasElement): void {
     const ctx = canvas.getContext("2d");
 
     if (!ctx) {

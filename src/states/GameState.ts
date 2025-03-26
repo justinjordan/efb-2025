@@ -15,73 +15,61 @@ export default class GameState extends State {
   private mouseX = 0;
   private mouseY = 0;
 
-  constructor(private readonly game: Efb) {
-    super();
-
-    this.canvas = document.createElement("canvas");
-    this.canvas.width = this.game.canvas.width;
-    this.canvas.height = this.game.canvas.height;
+  constructor(public game: Efb) {
+    super(game);
 
     this.ballLayer = new Layer(this.canvas);
     this.trailLayer = new Layer(this.canvas);
     this.backgroundLayer = new Layer(this.canvas, { backgroundColor: "#023" });
 
-    for (let i = 0; i < 3; i++) {
-      this.balls.push(
-        new Ball({
-          x: this.canvas.width * Math.random(),
-          y: this.canvas.height * Math.random(),
-          xSpeed: (300 * Math.random() + 200) * (Math.random() > 0.5 ? 1 : -1),
-          ySpeed: (300 * Math.random() + 200) * (Math.random() > 0.5 ? 1 : -1),
-        })
-      );
-    }
+    this.balls.push(
+      new Ball({
+        x: this.canvas.width / 2,
+        y: this.canvas.height / 2 - 100,
+        xSpeed: 500,
+        ySpeed: 0,
+      })
+    );
+    this.balls.push(
+      new Ball({
+        x: this.canvas.width / 2,
+        y: this.canvas.height / 2 + 100,
+        xSpeed: -500,
+        ySpeed: 0,
+      })
+    );
 
     this.handleKeyup = this.handleKeyup.bind(this);
   }
 
-  private handleKeyup(e: KeyboardEvent) {
+  onKeyup(e: KeyboardEvent) {
     if (e.key === "p") {
-      this.pauseGame();
+      this.game.pushState(new PauseState(this.game));
     }
   }
 
-  private handleMouseDown = (e: MouseEvent) => {
+  onMouseDown(e: MouseEvent) {
     this.mouseDown = true;
-  };
+  }
 
-  private handleMouseUp = (e: MouseEvent) => {
+  onMouseUp(e: MouseEvent) {
     this.mouseDown = false;
     this.heldBall = null;
-  };
+  }
 
-  private handleMouseMove = (e: MouseEvent) => {
+  onMouseMove(e: MouseEvent) {
     const rect = this.game.canvas.getBoundingClientRect();
     this.mouseX = e.clientX - rect.left;
     this.mouseY = e.clientY - rect.top;
-  };
+  }
 
-  public handleResize() {
+  onResize() {
     this.ballLayer.handleResize();
     this.trailLayer.handleResize();
     this.backgroundLayer.handleResize();
   }
 
-  public onEnter() {
-    document.addEventListener("keyup", this.handleKeyup);
-    document.addEventListener("mousedown", this.handleMouseDown);
-    document.addEventListener("mouseup", this.handleMouseUp);
-    document.addEventListener("mousemove", this.handleMouseMove);
-  }
-
-  public onExit() {
-    document.removeEventListener("keyup", this.handleKeyup);
-    document.removeEventListener("mousedown", this.handleMouseDown);
-    document.removeEventListener("mouseup", this.handleMouseUp);
-    document.removeEventListener("mousemove", this.handleMouseMove);
-  }
-
-  public update(delta: number) {
+  update(delta: number) {
     this.balls.forEach((ball) => ball.update(delta));
 
     // Handle ball attraction
@@ -144,18 +132,10 @@ export default class GameState extends State {
       this.heldBall.xSpeed = 0;
       this.heldBall.ySpeed = 0;
     }
-  }
-
-  public render() {
-    const ctx = this.canvas.getContext("2d");
-
-    if (!ctx) {
-      throw new Error("Cannot get 2d context from canvas");
-    }
 
     this.ballLayer.withLayer((canvas, ctx) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      this.balls.forEach((ball) => ball.render(canvas));
+      this.balls.forEach((ball) => ball.draw(canvas));
     });
 
     this.trailLayer.withLayer((canvas, ctx) => {
@@ -185,12 +165,12 @@ export default class GameState extends State {
     );
 
     this.backgroundLayer.clear();
-    ctx.drawImage(this.backgroundLayer.canvas, 0, 0);
-    ctx.drawImage(this.trailLayer.canvas, 0, 0);
-    ctx.drawImage(this.ballLayer.canvas, 0, 0);
+    this.ctx.drawImage(this.backgroundLayer.canvas, 0, 0);
+    this.ctx.drawImage(this.trailLayer.canvas, 0, 0);
+    this.ctx.drawImage(this.ballLayer.canvas, 0, 0);
   }
 
-  private pauseGame() {
-    this.game.pushState(new PauseState(this.game));
+  render(ctx: CanvasRenderingContext2D): void {
+    ctx.drawImage(this.canvas, 0, 0);
   }
 }
