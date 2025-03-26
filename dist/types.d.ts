@@ -10,7 +10,7 @@ declare abstract class State {
     onKeyup(e: KeyboardEvent): void;
     onMouseDown(e: MouseEvent): void;
     onMouseUp(e: MouseEvent): void;
-    onMouseMove(e: MouseEvent): void;
+    onMouseMove(e: MouseEvent, mouseX: number, mouseY: number): void;
     onResize(): void;
     beforeRender(): void;
     abstract update(delta: number): void;

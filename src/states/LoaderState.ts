@@ -8,12 +8,24 @@ export default class LoaderState extends State {
   bytesTotal: number = 10000;
   infoLayer: Layer;
   backgroundLayer: Layer;
+  active: boolean = false;
 
   constructor(public game: Efb) {
     super(game);
 
     this.infoLayer = new Layer(this.canvas);
     this.backgroundLayer = new Layer(this.canvas, { backgroundColor: "#023" });
+  }
+
+  onMouseMove(e: MouseEvent, mouseX: number, mouseY: number): void {
+    if (
+      mouseX > 0 &&
+      mouseX < this.canvas.width &&
+      mouseY > 0 &&
+      mouseY < this.canvas.height
+    ) {
+      this.active = true; // Set active to true if mouse is within canvas bounds
+    }
   }
 
   onKeyup(e: KeyboardEvent): void {
@@ -23,7 +35,7 @@ export default class LoaderState extends State {
   }
 
   update(delta: number): void {
-    if (!this.game.canvas.checkVisibility()) return;
+    if (!this.active) return;
 
     const duration = 4; // Duration of the loading screen in seconds
     this.bytesLoaded += (this.bytesTotal / duration) * delta; // Simulate loading progress

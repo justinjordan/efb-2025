@@ -29,7 +29,7 @@ export default abstract class State {
   onKeyup(e: KeyboardEvent) {}
   onMouseDown(e: MouseEvent) {}
   onMouseUp(e: MouseEvent) {}
-  onMouseMove(e: MouseEvent) {}
+  onMouseMove(e: MouseEvent, mouseX: number, mouseY: number) {}
   onResize() {}
   beforeRender() {}
 
@@ -77,6 +77,9 @@ export default abstract class State {
   }
 
   handleMouseMove(e: MouseEvent) {
-    this.onMouseMove(e);
+    const rect = this.game.canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    this.onMouseMove(e, mouseX, mouseY);
   }
 }

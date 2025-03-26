@@ -105,7 +105,7 @@ class $c6e9585522073c38$export$2e2bcd8739ae039 {
     onKeyup(e) {}
     onMouseDown(e) {}
     onMouseUp(e) {}
-    onMouseMove(e) {}
+    onMouseMove(e, mouseX, mouseY) {}
     onResize() {}
     beforeRender() {}
     handleEnter() {
@@ -139,7 +139,10 @@ class $c6e9585522073c38$export$2e2bcd8739ae039 {
         this.onMouseUp(e);
     }
     handleMouseMove(e) {
-        this.onMouseMove(e);
+        const rect = this.game.canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        this.onMouseMove(e, mouseX, mouseY);
     }
 }
 
@@ -317,17 +320,20 @@ class $88c64d01b002ea7b$export$2e2bcd8739ae039 extends (0, $c6e9585522073c38$exp
 
 class $b964b02ff2e11b82$export$2e2bcd8739ae039 extends (0, $c6e9585522073c38$export$2e2bcd8739ae039) {
     constructor(game){
-        super(game), this.game = game, this.bytesLoaded = 0, this.bytesTotal = 10000;
+        super(game), this.game = game, this.bytesLoaded = 0, this.bytesTotal = 10000, this.active = false;
         this.infoLayer = new (0, $565a624516254204$export$2e2bcd8739ae039)(this.canvas);
         this.backgroundLayer = new (0, $565a624516254204$export$2e2bcd8739ae039)(this.canvas, {
             backgroundColor: "#023"
         });
     }
+    onMouseMove(e, mouseX, mouseY) {
+        if (mouseX > 0 && mouseX < this.canvas.width && mouseY > 0 && mouseY < this.canvas.height) this.active = true; // Set active to true if mouse is within canvas bounds
+    }
     onKeyup(e) {
         if (e.key === "Enter" && this.bytesLoaded >= this.bytesTotal) this.game.pushState(new (0, $88c64d01b002ea7b$export$2e2bcd8739ae039)(this.game)); // Push the game state
     }
     update(delta) {
-        if (!this.game.canvas.checkVisibility()) return;
+        if (!this.active) return;
         const duration = 4; // Duration of the loading screen in seconds
         this.bytesLoaded += this.bytesTotal / duration * delta; // Simulate loading progress
         if (this.bytesLoaded >= this.bytesTotal) this.bytesLoaded = this.bytesTotal;
