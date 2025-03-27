@@ -35,6 +35,9 @@ export default class Efb {
     states: State[];
     running: boolean;
     constructor(canvas: HTMLCanvasElement, options?: GameOptions);
+    publish: (message: PubSubJS.Message, data?: any) => boolean;
+    subscribe: (message: PubSubJS.Message, func: PubSubJS.SubscriptionListener<any>) => PubSubJS.Token;
+    unsubscribe: (tokenOrFunction: string | PubSubJS.SubscriptionListener<any>) => PubSubJS.Token | boolean;
     start(): void;
     stop(): void;
     getCurrentState(): State;

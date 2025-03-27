@@ -2,6 +2,7 @@ import log from "loglevel";
 import State from "./types/State";
 import GameState from "./states/GameState";
 import LoaderState from "./states/LoaderState";
+import PubSub from "pubsub-js";
 
 const defaultOptions = {
   debug: false,
@@ -31,6 +32,10 @@ export default class Efb {
     this.logger.setLevel(options.debug ? "debug" : "silent");
     this.logger.debug("Efb initialized with options", this.options);
   }
+
+  public publish = PubSub.publish.bind(PubSub);
+  public subscribe = PubSub.subscribe.bind(PubSub);
+  public unsubscribe = PubSub.unsubscribe.bind(PubSub);
 
   public start() {
     this.running = true;

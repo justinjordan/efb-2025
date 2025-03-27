@@ -1,4 +1,5 @@
 import $doaur$loglevel from "loglevel";
+import $doaur$pubsubjs from "pubsub-js";
 
 
 class $c95e6a7d1d02e936$export$2e2bcd8739ae039 {
@@ -311,19 +312,24 @@ class $06ea7b158ce0d77d$export$2e2bcd8739ae039 extends (0, $f94dd35d7e4c47f0$exp
 
 class $dba7dd1cf2c5fe3f$export$2e2bcd8739ae039 extends (0, $f94dd35d7e4c47f0$export$2e2bcd8739ae039) {
     constructor(game){
-        super(game), this.game = game, this.bytesLoaded = 0, this.bytesTotal = 10000;
+        super(game), this.game = game, this.bytesLoaded = 0, this.bytesTotal = 10000, this.active = false;
         this.infoLayer = new (0, $185b6a29245bc483$export$2e2bcd8739ae039)(this.canvas);
         this.backgroundLayer = new (0, $185b6a29245bc483$export$2e2bcd8739ae039)(this.canvas, {
             backgroundColor: "#023"
+        });
+        PubSub.subscribe("loader:start", ()=>{
+            this.active = true; // Activate the loader when the event is triggered
         });
     }
     onKeyup(e) {
         if (e.key === "Enter" && this.bytesLoaded >= this.bytesTotal) this.game.pushState(new (0, $06ea7b158ce0d77d$export$2e2bcd8739ae039)(this.game)); // Push the game state
     }
     update(delta) {
-        const duration = 4; // Duration of the loading screen in seconds
-        this.bytesLoaded += this.bytesTotal / duration * delta; // Simulate loading progress
-        if (this.bytesLoaded >= this.bytesTotal) this.bytesLoaded = this.bytesTotal;
+        if (this.active) {
+            const duration = 4; // Duration of the loading screen in seconds
+            this.bytesLoaded += this.bytesTotal / duration * delta; // Simulate loading progress
+            if (this.bytesLoaded >= this.bytesTotal) this.bytesLoaded = this.bytesTotal;
+        }
         this.infoLayer.withLayer((canvas, ctx)=>{
             ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             const percentage = Math.floor(100 * this.bytesLoaded / this.bytesTotal);
@@ -357,6 +363,7 @@ class $dba7dd1cf2c5fe3f$export$2e2bcd8739ae039 extends (0, $f94dd35d7e4c47f0$exp
 }
 
 
+
 const $b013a5dd6d18443e$var$defaultOptions = {
     debug: false,
     loader: false
@@ -368,6 +375,9 @@ class $b013a5dd6d18443e$export$2e2bcd8739ae039 {
         this.states = [];
         this.running = false;
         this.lastUpdate = 0;
+        this.publish = (0, $doaur$pubsubjs).publish.bind((0, $doaur$pubsubjs));
+        this.subscribe = (0, $doaur$pubsubjs).subscribe.bind((0, $doaur$pubsubjs));
+        this.unsubscribe = (0, $doaur$pubsubjs).unsubscribe.bind((0, $doaur$pubsubjs));
         this.options = {
             ...$b013a5dd6d18443e$var$defaultOptions,
             ...options

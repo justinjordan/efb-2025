@@ -735,6 +735,8 @@ var _gameState = require("./states/GameState");
 var _gameStateDefault = parcelHelpers.interopDefault(_gameState);
 var _loaderState = require("./states/LoaderState");
 var _loaderStateDefault = parcelHelpers.interopDefault(_loaderState);
+var _pubsubJs = require("pubsub-js");
+var _pubsubJsDefault = parcelHelpers.interopDefault(_pubsubJs);
 const defaultOptions = {
     debug: false,
     loader: false
@@ -746,6 +748,9 @@ class Efb {
         this.states = [];
         this.running = false;
         this.lastUpdate = 0;
+        this.publish = (0, _pubsubJsDefault.default).publish.bind((0, _pubsubJsDefault.default));
+        this.subscribe = (0, _pubsubJsDefault.default).subscribe.bind((0, _pubsubJsDefault.default));
+        this.unsubscribe = (0, _pubsubJsDefault.default).unsubscribe.bind((0, _pubsubJsDefault.default));
         this.options = {
             ...defaultOptions,
             ...options
@@ -838,7 +843,7 @@ class Efb {
 }
 exports.default = Efb;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","loglevel":"7kRFs","./states/GameState":"lUNvG","./states/LoaderState":"dfxSB"}],"7kRFs":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","loglevel":"7kRFs","./states/GameState":"lUNvG","./states/LoaderState":"dfxSB","pubsub-js":"7Q0x0"}],"7kRFs":[function(require,module,exports,__globalThis) {
 /*
 * loglevel - https://github.com/pimterry/loglevel
 *
@@ -1417,19 +1422,24 @@ var _gameState = require("./GameState");
 var _gameStateDefault = parcelHelpers.interopDefault(_gameState);
 class LoaderState extends (0, _stateDefault.default) {
     constructor(game){
-        super(game), this.game = game, this.bytesLoaded = 0, this.bytesTotal = 10000;
+        super(game), this.game = game, this.bytesLoaded = 0, this.bytesTotal = 10000, this.active = false;
         this.infoLayer = new (0, _layerDefault.default)(this.canvas);
         this.backgroundLayer = new (0, _layerDefault.default)(this.canvas, {
             backgroundColor: "#023"
+        });
+        PubSub.subscribe("loader-start", ()=>{
+            this.active = true; // Activate the loader when the event is triggered
         });
     }
     onKeyup(e) {
         if (e.key === "Enter" && this.bytesLoaded >= this.bytesTotal) this.game.pushState(new (0, _gameStateDefault.default)(this.game)); // Push the game state
     }
     update(delta) {
-        const duration = 4; // Duration of the loading screen in seconds
-        this.bytesLoaded += this.bytesTotal / duration * delta; // Simulate loading progress
-        if (this.bytesLoaded >= this.bytesTotal) this.bytesLoaded = this.bytesTotal;
+        if (this.active) {
+            const duration = 4; // Duration of the loading screen in seconds
+            this.bytesLoaded += this.bytesTotal / duration * delta; // Simulate loading progress
+            if (this.bytesLoaded >= this.bytesTotal) this.bytesLoaded = this.bytesTotal;
+        }
         this.infoLayer.withLayer((canvas, ctx)=>{
             ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             const percentage = Math.floor(100 * this.bytesLoaded / this.bytesTotal);
@@ -1463,7 +1473,250 @@ class LoaderState extends (0, _stateDefault.default) {
 }
 exports.default = LoaderState;
 
-},{"../types/State":"wP82z","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../entities/Layer":"6a4kO","./GameState":"lUNvG"}]},["coqxu","ifSeS"], "ifSeS", "parcelRequirebcdb")
+},{"../types/State":"wP82z","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../entities/Layer":"6a4kO","./GameState":"lUNvG"}],"7Q0x0":[function(require,module,exports,__globalThis) {
+var global = arguments[3];
+/**
+ * Copyright (c) 2010,2011,2012,2013,2014 Morgan Roderick http://roderick.dk
+ * License: MIT - http://mrgnrdrck.mit-license.org
+ *
+ * https://github.com/mroderick/PubSubJS
+ */ (function(root, factory) {
+    'use strict';
+    var PubSub = {};
+    if (root.PubSub) {
+        PubSub = root.PubSub;
+        console.warn("PubSub already loaded, using existing version");
+    } else {
+        root.PubSub = PubSub;
+        factory(PubSub);
+    }
+    if (module !== undefined && module.exports) exports = module.exports = PubSub; // Node.js specific `module.exports`
+    exports.PubSub = PubSub; // CommonJS module 1.1.1 spec
+    module.exports = exports = PubSub; // CommonJS
+})(typeof window === 'object' && window || this || global, function(PubSub) {
+    'use strict';
+    var messages = {}, lastUid = -1, ALL_SUBSCRIBING_MSG = '*';
+    function hasKeys(obj) {
+        var key;
+        for(key in obj){
+            if (Object.prototype.hasOwnProperty.call(obj, key)) return true;
+        }
+        return false;
+    }
+    /**
+     * Returns a function that throws the passed exception, for use as argument for setTimeout
+     * @alias throwException
+     * @function
+     * @param { Object } ex An Error object
+     */ function throwException(ex) {
+        return function reThrowException() {
+            throw ex;
+        };
+    }
+    function callSubscriberWithDelayedExceptions(subscriber, message, data) {
+        try {
+            subscriber(message, data);
+        } catch (ex) {
+            setTimeout(throwException(ex), 0);
+        }
+    }
+    function callSubscriberWithImmediateExceptions(subscriber, message, data) {
+        subscriber(message, data);
+    }
+    function deliverMessage(originalMessage, matchedMessage, data, immediateExceptions) {
+        var subscribers = messages[matchedMessage], callSubscriber = immediateExceptions ? callSubscriberWithImmediateExceptions : callSubscriberWithDelayedExceptions, s;
+        if (!Object.prototype.hasOwnProperty.call(messages, matchedMessage)) return;
+        for(s in subscribers)if (Object.prototype.hasOwnProperty.call(subscribers, s)) callSubscriber(subscribers[s], originalMessage, data);
+    }
+    function createDeliveryFunction(message, data, immediateExceptions) {
+        return function deliverNamespaced() {
+            var topic = String(message), position = topic.lastIndexOf('.');
+            // deliver the message as it is now
+            deliverMessage(message, message, data, immediateExceptions);
+            // trim the hierarchy and deliver message to each level
+            while(position !== -1){
+                topic = topic.substr(0, position);
+                position = topic.lastIndexOf('.');
+                deliverMessage(message, topic, data, immediateExceptions);
+            }
+            deliverMessage(message, ALL_SUBSCRIBING_MSG, data, immediateExceptions);
+        };
+    }
+    function hasDirectSubscribersFor(message) {
+        var topic = String(message), found = Boolean(Object.prototype.hasOwnProperty.call(messages, topic) && hasKeys(messages[topic]));
+        return found;
+    }
+    function messageHasSubscribers(message) {
+        var topic = String(message), found = hasDirectSubscribersFor(topic) || hasDirectSubscribersFor(ALL_SUBSCRIBING_MSG), position = topic.lastIndexOf('.');
+        while(!found && position !== -1){
+            topic = topic.substr(0, position);
+            position = topic.lastIndexOf('.');
+            found = hasDirectSubscribersFor(topic);
+        }
+        return found;
+    }
+    function publish(message, data, sync, immediateExceptions) {
+        message = typeof message === 'symbol' ? message.toString() : message;
+        var deliver = createDeliveryFunction(message, data, immediateExceptions), hasSubscribers = messageHasSubscribers(message);
+        if (!hasSubscribers) return false;
+        if (sync === true) deliver();
+        else setTimeout(deliver, 0);
+        return true;
+    }
+    /**
+     * Publishes the message, passing the data to it's subscribers
+     * @function
+     * @alias publish
+     * @param { String } message The message to publish
+     * @param {} data The data to pass to subscribers
+     * @return { Boolean }
+     */ PubSub.publish = function(message, data) {
+        return publish(message, data, false, PubSub.immediateExceptions);
+    };
+    /**
+     * Publishes the message synchronously, passing the data to it's subscribers
+     * @function
+     * @alias publishSync
+     * @param { String } message The message to publish
+     * @param {} data The data to pass to subscribers
+     * @return { Boolean }
+     */ PubSub.publishSync = function(message, data) {
+        return publish(message, data, true, PubSub.immediateExceptions);
+    };
+    /**
+     * Subscribes the passed function to the passed message. Every returned token is unique and should be stored if you need to unsubscribe
+     * @function
+     * @alias subscribe
+     * @param { String } message The message to subscribe to
+     * @param { Function } func The function to call when a new message is published
+     * @return { String }
+     */ PubSub.subscribe = function(message, func) {
+        if (typeof func !== 'function') return false;
+        message = typeof message === 'symbol' ? message.toString() : message;
+        // message is not registered yet
+        if (!Object.prototype.hasOwnProperty.call(messages, message)) messages[message] = {};
+        // forcing token as String, to allow for future expansions without breaking usage
+        // and allow for easy use as key names for the 'messages' object
+        var token = 'uid_' + String(++lastUid);
+        messages[message][token] = func;
+        // return token for unsubscribing
+        return token;
+    };
+    PubSub.subscribeAll = function(func) {
+        return PubSub.subscribe(ALL_SUBSCRIBING_MSG, func);
+    };
+    /**
+     * Subscribes the passed function to the passed message once
+     * @function
+     * @alias subscribeOnce
+     * @param { String } message The message to subscribe to
+     * @param { Function } func The function to call when a new message is published
+     * @return { PubSub }
+     */ PubSub.subscribeOnce = function(message, func) {
+        var token = PubSub.subscribe(message, function() {
+            // before func apply, unsubscribe message
+            PubSub.unsubscribe(token);
+            func.apply(this, arguments);
+        });
+        return PubSub;
+    };
+    /**
+     * Clears all subscriptions
+     * @function
+     * @public
+     * @alias clearAllSubscriptions
+     */ PubSub.clearAllSubscriptions = function clearAllSubscriptions() {
+        messages = {};
+    };
+    /**
+     * Clear subscriptions by the topic
+     * @function
+     * @public
+     * @alias clearAllSubscriptions
+     * @return { int }
+     */ PubSub.clearSubscriptions = function clearSubscriptions(topic) {
+        var m;
+        for(m in messages)if (Object.prototype.hasOwnProperty.call(messages, m) && m.indexOf(topic) === 0) delete messages[m];
+    };
+    /**
+       Count subscriptions by the topic
+     * @function
+     * @public
+     * @alias countSubscriptions
+     * @return { Array }
+    */ PubSub.countSubscriptions = function countSubscriptions(topic) {
+        var m;
+        // eslint-disable-next-line no-unused-vars
+        var token;
+        var count = 0;
+        for(m in messages)if (Object.prototype.hasOwnProperty.call(messages, m) && m.indexOf(topic) === 0) {
+            for(token in messages[m])count++;
+            break;
+        }
+        return count;
+    };
+    /**
+       Gets subscriptions by the topic
+     * @function
+     * @public
+     * @alias getSubscriptions
+    */ PubSub.getSubscriptions = function getSubscriptions(topic) {
+        var m;
+        var list = [];
+        for(m in messages)if (Object.prototype.hasOwnProperty.call(messages, m) && m.indexOf(topic) === 0) list.push(m);
+        return list;
+    };
+    /**
+     * Removes subscriptions
+     *
+     * - When passed a token, removes a specific subscription.
+     *
+	 * - When passed a function, removes all subscriptions for that function
+     *
+	 * - When passed a topic, removes all subscriptions for that topic (hierarchy)
+     * @function
+     * @public
+     * @alias subscribeOnce
+     * @param { String | Function } value A token, function or topic to unsubscribe from
+     * @example // Unsubscribing with a token
+     * var token = PubSub.subscribe('mytopic', myFunc);
+     * PubSub.unsubscribe(token);
+     * @example // Unsubscribing with a function
+     * PubSub.unsubscribe(myFunc);
+     * @example // Unsubscribing from a topic
+     * PubSub.unsubscribe('mytopic');
+     */ PubSub.unsubscribe = function(value) {
+        var descendantTopicExists = function(topic) {
+            var m;
+            for(m in messages){
+                if (Object.prototype.hasOwnProperty.call(messages, m) && m.indexOf(topic) === 0) // a descendant of the topic exists:
+                return true;
+            }
+            return false;
+        }, isTopic = typeof value === 'string' && (Object.prototype.hasOwnProperty.call(messages, value) || descendantTopicExists(value)), isToken = !isTopic && typeof value === 'string', isFunction = typeof value === 'function', result = false, m, message, t;
+        if (isTopic) {
+            PubSub.clearSubscriptions(value);
+            return;
+        }
+        for(m in messages)if (Object.prototype.hasOwnProperty.call(messages, m)) {
+            message = messages[m];
+            if (isToken && message[value]) {
+                delete message[value];
+                result = value;
+                break;
+            }
+            if (isFunction) {
+                for(t in message)if (Object.prototype.hasOwnProperty.call(message, t) && message[t] === value) {
+                    delete message[t];
+                    result = true;
+                }
+            }
+        }
+        return result;
+    };
+});
+
+},{}]},["coqxu","ifSeS"], "ifSeS", "parcelRequirebcdb")
 
 </script>
 </body>

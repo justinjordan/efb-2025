@@ -16,10 +16,12 @@
   "devDependencies": {
     "@parcel/packager-ts": "2.14.2",
     "@parcel/transformer-typescript-types": "2.14.2",
+    "@types/pubsub-js": "^1.8.6",
     "parcel": "^2.14.2",
     "typescript": ">=3.0.0"
   },
   "dependencies": {
-    "loglevel": "^1.9.2"
+    "loglevel": "^1.9.2",
+    "pubsub-js": "^1.9.5"
   }
 }

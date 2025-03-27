@@ -8,12 +8,17 @@ export default class LoaderState extends State {
   bytesTotal: number = 10000;
   infoLayer: Layer;
   backgroundLayer: Layer;
+  active: boolean = false;
 
   constructor(public game: Efb) {
     super(game);
 
     this.infoLayer = new Layer(this.canvas);
     this.backgroundLayer = new Layer(this.canvas, { backgroundColor: "#023" });
+
+    PubSub.subscribe("loader:start", () => {
+      this.active = true; // Activate the loader when the event is triggered
+    });
   }
 
   onKeyup(e: KeyboardEvent): void {
@@ -23,10 +28,12 @@ export default class LoaderState extends State {
   }
 
   update(delta: number): void {
-    const duration = 4; // Duration of the loading screen in seconds
-    this.bytesLoaded += (this.bytesTotal / duration) * delta; // Simulate loading progress
-    if (this.bytesLoaded >= this.bytesTotal) {
-      this.bytesLoaded = this.bytesTotal;
+    if (this.active) {
+      const duration = 4; // Duration of the loading screen in seconds
+      this.bytesLoaded += (this.bytesTotal / duration) * delta; // Simulate loading progress
+      if (this.bytesLoaded >= this.bytesTotal) {
+        this.bytesLoaded = this.bytesTotal;
+      }
     }
 
     this.infoLayer.withLayer((canvas, ctx) => {
