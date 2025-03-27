@@ -202,6 +202,13 @@ class $06ea7b158ce0d77d$export$2e2bcd8739ae039 extends (0, $f94dd35d7e4c47f0$exp
     }
     onKeyup(e) {
         if (e.key === "p") this.game.pushState(new (0, $3c9a1211b363cd3e$export$2e2bcd8739ae039)(this.game));
+        if (e.key === "+" || e.key === "=") this.balls.push(new (0, $c95e6a7d1d02e936$export$2e2bcd8739ae039)({
+            x: this.canvas.width * Math.random(),
+            y: this.canvas.height * Math.random(),
+            xSpeed: Math.random() * 1000 - 500,
+            ySpeed: Math.random() * 1000 - 500
+        }));
+        if (e.key === "-" || e.key === "_") this.balls.pop();
     }
     onMouseDown(e) {
         this.mouseDown = true;

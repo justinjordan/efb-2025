@@ -1112,6 +1112,13 @@ class GameState extends (0, _stateDefault.default) {
     }
     onKeyup(e) {
         if (e.key === "p") this.game.pushState(new (0, _pauseStateDefault.default)(this.game));
+        if (e.key === "+" || e.key === "=") this.balls.push(new (0, _ballDefault.default)({
+            x: this.canvas.width * Math.random(),
+            y: this.canvas.height * Math.random(),
+            xSpeed: Math.random() * 1000 - 500,
+            ySpeed: Math.random() * 1000 - 500
+        }));
+        if (e.key === "-" || e.key === "_") this.balls.pop();
     }
     onMouseDown(e) {
         this.mouseDown = true;

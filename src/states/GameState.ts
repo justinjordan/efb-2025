@@ -46,6 +46,21 @@ export default class GameState extends State {
     if (e.key === "p") {
       this.game.pushState(new PauseState(this.game));
     }
+
+    if (e.key === "+" || e.key === "=") {
+      this.balls.push(
+        new Ball({
+          x: this.canvas.width * Math.random(),
+          y: this.canvas.height * Math.random(),
+          xSpeed: Math.random() * 1000 - 500,
+          ySpeed: Math.random() * 1000 - 500,
+        })
+      );
+    }
+
+    if (e.key === "-" || e.key === "_") {
+      this.balls.pop();
+    }
   }
 
   onMouseDown(e: MouseEvent) {
