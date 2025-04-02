@@ -12,10 +12,13 @@ const defaultOptions = {
 type GameOptions = Partial<typeof defaultOptions>;
 
 export default class Efb {
-  logger = log.getLogger("Efb");
-  options: GameOptions;
-  states: State[] = [];
-  running = false;
+  public logger = log.getLogger("Efb");
+  public options: GameOptions;
+  public states: State[] = [];
+  public running = false;
+  public publish = PubSub.publish.bind(PubSub);
+  public subscribe = PubSub.subscribe.bind(PubSub);
+  public unsubscribe = PubSub.unsubscribe.bind(PubSub);
 
   private lastUpdate = 0;
 
@@ -32,10 +35,6 @@ export default class Efb {
     this.logger.setLevel(options.debug ? "debug" : "silent");
     this.logger.debug("Efb initialized with options", this.options);
   }
-
-  public publish = PubSub.publish.bind(PubSub);
-  public subscribe = PubSub.subscribe.bind(PubSub);
-  public unsubscribe = PubSub.unsubscribe.bind(PubSub);
 
   public start() {
     this.running = true;

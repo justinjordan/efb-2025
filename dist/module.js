@@ -374,10 +374,10 @@ class $b013a5dd6d18443e$export$2e2bcd8739ae039 {
         this.logger = (0, $doaur$loglevel).getLogger("Efb");
         this.states = [];
         this.running = false;
-        this.lastUpdate = 0;
         this.publish = (0, $doaur$pubsubjs).publish.bind((0, $doaur$pubsubjs));
         this.subscribe = (0, $doaur$pubsubjs).subscribe.bind((0, $doaur$pubsubjs));
         this.unsubscribe = (0, $doaur$pubsubjs).unsubscribe.bind((0, $doaur$pubsubjs));
+        this.lastUpdate = 0;
         this.options = {
             ...$b013a5dd6d18443e$var$defaultOptions,
             ...options

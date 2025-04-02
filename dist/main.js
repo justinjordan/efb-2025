@@ -390,10 +390,10 @@ class $53ffd25df6034fb9$export$2e2bcd8739ae039 {
         this.logger = (0, ($parcel$interopDefault($ePUDy$loglevel))).getLogger("Efb");
         this.states = [];
         this.running = false;
-        this.lastUpdate = 0;
         this.publish = (0, ($parcel$interopDefault($ePUDy$pubsubjs))).publish.bind((0, ($parcel$interopDefault($ePUDy$pubsubjs))));
         this.subscribe = (0, ($parcel$interopDefault($ePUDy$pubsubjs))).subscribe.bind((0, ($parcel$interopDefault($ePUDy$pubsubjs))));
         this.unsubscribe = (0, ($parcel$interopDefault($ePUDy$pubsubjs))).unsubscribe.bind((0, ($parcel$interopDefault($ePUDy$pubsubjs))));
+        this.lastUpdate = 0;
         this.options = {
             ...$53ffd25df6034fb9$var$defaultOptions,
             ...options
